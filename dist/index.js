@@ -8,6 +8,8 @@ const commander_1 = require("commander");
 const App_1 = __importDefault(require("./App"));
 const ConfigFile_1 = __importDefault(require("./ConfigFile"));
 const Component_1 = __importDefault(require("./Component"));
+const Container_1 = __importDefault(require("./Container"));
+const Page_1 = __importDefault(require("./Page"));
 const constants_1 = require("./constants");
 commander_1.program.version('1.0.0-beta-0.1');
 commander_1.program
@@ -44,14 +46,19 @@ commander_1.program
     .option('-a, --use-axios', 'Bootstraps a react app with built in Axios', false)
     .option('-N, --use-npm', 'Uses npm as a package manager', false)
     .action(App_1.default.createNextApp);
-commander_1.program
-    .command('generate component <name> [dir]')
-    .alias('g comp')
-    .description('Generates a component with a <name> and an optionnal [dir]')
-    .option('-t, --use-typescript', 'Generates a component with typescript', false)
-    .option('-c, --class', 'Generates a class based component', false)
-    .option('-s, --with-styles <type>', 'Generates a componente with a stylesheet associated with <type> = css | scss', false)
-    .option('-m, --use-modules', 'Wheter or not to use the so called css modules', false)
+const generate = commander_1.program.command('generate').alias('g');
+generate
+    .command('component <component_name>')
+    .alias('comp')
+    .description('Generates a component with a <name>')
+    .option('-d, --component-dir <path>', 'Will generate the component in the specified path', 'src/components')
+    .option('-t, --typescript', 'Generates a component with typescript', false)
+    .option('-c, --component-type <type>', 'Generate a funcion or class component', 'function')
+    .option('-s, --styling <type>', 'Generates a componente with a stylesheet associated with <type> = css | scss', 'scss')
+    .option('-m, --css-modules', 'Whether or not to use the module styling system for css/scss', false)
+    .option('--import-react', 'This will influence the future component generation with the import React from "react" line', false)
     .action(Component_1.default.generate);
+generate.command('container <container_name>').alias('cont').action(Container_1.default.generate);
+generate.command('page <page_name>').alias('p').action(Page_1.default.generate);
 commander_1.program.parse(process.argv);
 //# sourceMappingURL=index.js.map

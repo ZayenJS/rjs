@@ -6,6 +6,7 @@ declare class ConfigFile {
     private copyRcTemplate;
     private createRcTemplate;
     private prompForOverwrite;
+    parse: (filePath: string) => Promise<string>;
 }
 declare const _default: ConfigFile;
 export default _default;

@@ -1,8 +1,10 @@
 #! /usr/bin/env node
 import { program } from 'commander';
-import app, { App } from './App';
+import app from './App';
 import configFile from './ConfigFile';
 import component from './Component';
+import container from './Container';
+import page from './Page';
 import { PACKAGE_NAME } from './constants';
 
 program.version('1.0.0-beta-0.1');
@@ -60,18 +62,37 @@ program
   .option('-N, --use-npm', 'Uses npm as a package manager', false)
   .action(app.createNextApp);
 
-program
-  .command('generate component <name> [dir]')
-  .alias('g comp')
-  .description('Generates a component with a <name> and an optionnal [dir]')
-  .option('-t, --use-typescript', 'Generates a component with typescript', false)
-  .option('-c, --class', 'Generates a class based component', false)
+const generate = program.command('generate').alias('g');
+
+generate
+  .command('component <component_name>')
+  .alias('comp')
+  .description('Generates a component with a <name>')
   .option(
-    '-s, --with-styles <type>',
+    '-d, --component-dir <path>',
+    'Will generate the component in the specified path',
+    'src/components',
+  )
+  .option('-t, --typescript', 'Generates a component with typescript', false)
+  .option('-c, --component-type <type>', 'Generate a funcion or class component', 'function')
+  .option(
+    '-s, --styling <type>',
     'Generates a componente with a stylesheet associated with <type> = css | scss',
+    'scss',
+  )
+  .option(
+    '-m, --css-modules',
+    'Whether or not to use the module styling system for css/scss',
     false,
   )
-  .option('-m, --use-modules', 'Wheter or not to use the so called css modules', false)
+  .option(
+    '--import-react',
+    'This will influence the future component generation with the import React from "react" line',
+    false,
+  )
   .action(component.generate);
+
+generate.command('container <container_name>').alias('cont').action(container.generate);
+generate.command('page <page_name>').alias('p').action(page.generate);
 
 program.parse(process.argv);

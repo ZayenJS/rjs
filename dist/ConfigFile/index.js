@@ -59,7 +59,7 @@ class ConfigFile {
         });
         this.createRcTemplate = (options) => __awaiter(this, void 0, void 0, function* () {
             const rcTemplatePath = path_1.default.join(this.rootDirPath, 'rc-template.json');
-            const rcTemplateJSONFile = yield promises_1.default.readFile(rcTemplatePath, { encoding: 'utf-8' });
+            const rcTemplateJSONFile = yield this.parse(rcTemplatePath);
             const rcTemplate = JSON.parse(rcTemplateJSONFile);
             for (const key in options) {
                 rcTemplate[key] = options[key];
@@ -88,6 +88,7 @@ class ConfigFile {
                 required: true,
             });
         });
+        this.parse = (filePath) => __awaiter(this, void 0, void 0, function* () { return promises_1.default.readFile(filePath, { encoding: 'utf-8' }); });
     }
 }
 exports.default = new ConfigFile();

@@ -5,6 +5,5 @@
   "styling": "css",
   "cssModules": false,
   "componentType": "function",
-  "componentDir": "src/components",
-  "packageManager": "npm"
+  "componentDir": "src/components"
 }

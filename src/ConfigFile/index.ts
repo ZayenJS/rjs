@@ -58,7 +58,7 @@ class ConfigFile {
 
   private createRcTemplate = async (options: ConfigFileOptions) => {
     const rcTemplatePath = path.join(this.rootDirPath, 'rc-template.json');
-    const rcTemplateJSONFile = await fs.readFile(rcTemplatePath, { encoding: 'utf-8' });
+    const rcTemplateJSONFile = await this.parse(rcTemplatePath);
     const rcTemplate = JSON.parse(rcTemplateJSONFile);
 
     for (const key in options) {
@@ -92,6 +92,8 @@ class ConfigFile {
       required: true,
     });
   };
+
+  public parse = async (filePath: string) => fs.readFile(filePath, { encoding: 'utf-8' });
 }
 
 export default new ConfigFile();
