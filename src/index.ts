@@ -9,6 +9,16 @@ import { PACKAGE_NAME } from './constants';
 
 program.version('1.0.0-beta-0.1');
 
+/*
+
+    ____ ___  _   _ _____ ___ ____
+   / ___/ _ \| \ | |  ___|_ _/ ___|
+  | |  | | | |  \| | |_   | | |  _
+  | |__| |_| | |\  |  _|  | | |_| |
+   \____\___/|_| \_|_|   |___\____|
+
+
+*/
 program
   .command('config')
   .description('Creates a config file for ' + PACKAGE_NAME)
@@ -37,8 +47,19 @@ program
   )
   .action(configFile.generate);
 
-program
-  .command('new-react-app  [app-name]')
+/*
+
+   _   _ _______        __
+  | \ | | ____\ \      / /
+  |  \| |  _|  \ \ /\ / /
+  | |\  | |___  \ V  V /
+  |_| \_|_____|  \_/\_/
+
+
+*/
+const newCommand = program.command('new');
+newCommand
+  .command('react-app  [app-name]')
   .description('Uses create-react-app to create a new react app')
   .option('-i, --interactive', 'Starts the interactive mode', false)
   .option('-t, --use-typescript', 'Uses typescript template to create react app', false)
@@ -50,8 +71,8 @@ program
   .option('-N, --use-npm', 'Uses npm as a package manager', false)
   .action(app.createReactApp);
 
-program
-  .command('new-next-app  [app-name]')
+newCommand
+  .command('next-app  [app-name]')
   .description('Uses create-next-app to create a new next app')
   .option('-i, --interactive', 'Starts the interactive mode', false)
   .option('-t, --use-typescript', 'Uses typescript template to create react app', false)
@@ -62,37 +83,52 @@ program
   .option('-N, --use-npm', 'Uses npm as a package manager', false)
   .action(app.createNextApp);
 
+/*
+
+    ____ _____ _   _ _____ ____      _  _____ _____
+   / ___| ____| \ | | ____|  _ \    / \|_   _| ____|
+  | |  _|  _| |  \| |  _| | |_) |  / _ \ | | |  _|
+  | |_| | |___| |\  | |___|  _ <  / ___ \| | | |___
+   \____|_____|_| \_|_____|_| \_\/_/   \_\_| |_____|
+
+
+*/
 const generate = program.command('generate').alias('g');
 
+// COMPONENT
 generate
   .command('component <component_name>')
   .alias('comp')
-  .description('Generates a component with a <name>')
-  .option(
-    '-d, --component-dir <path>',
-    'Will generate the component in the specified path',
-    'src/components',
-  )
-  .option('-t, --typescript', 'Generates a component with typescript', false)
-  .option('-c, --component-type <type>', 'Generate a funcion or class component', 'function')
+  .description('Generates a component with a <component_name>')
+  .option('-d, --component-dir <path>', 'Will generate the component in the specified path')
+  .option('-t, --typescript', 'Generates a component with typescript')
+  .option('-c, --component-type <type>', 'Generate a funcion or class component')
   .option(
     '-s, --styling <type>',
     'Generates a componente with a stylesheet associated with <type> = css | scss',
-    'scss',
   )
-  .option(
-    '-m, --css-modules',
-    'Whether or not to use the module styling system for css/scss',
-    false,
-  )
+  .option('-m, --css-modules', 'Whether or not to use the module styling system for css/scss')
   .option(
     '--import-react',
     'This will influence the future component generation with the import React from "react" line',
-    false,
   )
+  .option('-T, --tag <tag_name>', 'The HTML tag to use for the component')
   .action(component.generate);
 
-generate.command('container <container_name>').alias('cont').action(container.generate);
-generate.command('page <page_name>').alias('p').action(page.generate);
+// CONTAINER
+generate
+  .command('container <container_name>')
+  .description('Generates a container with a <container_name>')
+  .option('-t, --typescript', 'Generates a container with typescript', false)
+  .alias('cont')
+  .action(container.generate);
+
+// PAGE
+generate
+  .command('page <page_name>')
+  .alias('p')
+  .description('Generates a page with a <page_name>')
+  .option('-t, --typescript', 'Generates a page with typescript', false)
+  .action(page.generate);
 
 program.parse(process.argv);
