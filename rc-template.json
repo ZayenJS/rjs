@@ -1,0 +1,12 @@
+{
+  "type": "react",
+  "importReact": false,
+  "typescript": false,
+  "router": true,
+  "axios": true,
+  "redux": true,
+  "styling": "css",
+  "cssModules": false,
+  "componentType": "function",
+  "componentDir": "src/components"
+}
