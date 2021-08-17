@@ -1,3 +1,6 @@
+import chalk from 'chalk';
+import { prompt } from 'enquirer';
+
 import configFile from '../ConfigFile';
 
 class Shell {
@@ -10,6 +13,14 @@ class Shell {
 
     return baseOptions ?? options;
   };
+
+  public alreadyExistPromp = async (message: string): Promise<{ overwrite: boolean }> =>
+    prompt({
+      type: 'toggle',
+      name: 'overwrite',
+      message: chalk`{yellow ${message}}`,
+      required: true,
+    });
 }
 
 export default new Shell();

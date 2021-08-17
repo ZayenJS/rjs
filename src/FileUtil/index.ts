@@ -1,47 +1,60 @@
-import path from 'path';
 import { constants } from 'fs';
+import path from 'path';
 import fs from 'fs/promises';
 
 import { prompt } from 'enquirer';
 import chalk from 'chalk';
 import logger from '../Logger';
-import { ComponentOptions, CreatFileRecusrsion } from '../@types';
+
+import findUp, { exists } from 'find-up';
 
 class FileUtil {
   public createFile = async (
     directoryPath: string,
     fileName: string,
-  ): Promise<CreatFileRecusrsion | fs.FileHandle | undefined> => {
+  ): Promise<string | undefined> => {
     try {
       const filePath = path.join(directoryPath, fileName);
+      const dirExists = await this.checkDirectoryExistence(directoryPath);
 
-      return await fs.open(filePath, 'w+');
-    } catch (error) {
-      const { create } = await this.createPathPromp(directoryPath);
-
-      if (create) {
+      if (!dirExists) {
         await this.createDirecoryRecursively(directoryPath);
-        logger.log('green', `${directoryPath} created successfully!`);
-        return this.createFile(directoryPath, fileName);
+        logger.italic('green', `Directory ${directoryPath} created successfully!`);
       }
 
+      const file = await fs.open(filePath, constants.O_CREAT);
+      await file.close();
+      return fs.readFile(filePath, { encoding: 'utf8' });
+    } catch (error) {
+      logger.debug(error);
       logger.exit('Path not created.');
     }
   };
 
-  public writeToFile = async (file: fs.FileHandle, data: string) => {
+  private checkDirectoryExistence = async (directoryPath: string) => {
+    const packageJsonDirPath = await findUp('package.json');
+
+    let rootDirPath = '';
+    if (!packageJsonDirPath)
+      return logger.exit('Package.json not found... Make sure you are in the right directory.');
+
+    rootDirPath = packageJsonDirPath.split('package.json')[0];
+    return exists(path.join(rootDirPath, directoryPath));
+  };
+
+  public writeToFile = async (path: string, data: string) => {
     try {
-      await file.writeFile(data, { encoding: 'utf-8' });
+      await fs.writeFile(path, data, { encoding: 'utf-8' });
     } catch (error) {
       logger.exit(error);
     }
   };
 
-  private createPathPromp = async (path: string): Promise<{ create: boolean }> =>
+  private createPathPromp = async (path: string, message: string): Promise<{ create: boolean }> =>
     prompt({
       type: 'toggle',
       name: 'create',
-      message: chalk`{yellow Path ${path} doesn't exist, do you want to create it?}`,
+      message: chalk`{yellow ${message}}`,
       required: true,
     });
 

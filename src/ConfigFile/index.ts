@@ -1,8 +1,6 @@
 import fs from 'fs/promises';
 
-import { prompt } from 'enquirer';
 import findUp from 'find-up';
-import chalk from 'chalk';
 
 import shell from '../Shell';
 import fileUtil from '../FileUtil';
@@ -47,7 +45,9 @@ class ConfigFile {
       const fileExists = await fileUtil.fileExist(this.destinationPath);
 
       if (fileExists) {
-        const { overwrite } = await this.prompForOverwrite();
+        const { overwrite } = await shell.alreadyExistPromp(
+          'File already exists, do you want to overwrite it?',
+        );
 
         if (overwrite) {
           fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
@@ -62,14 +62,6 @@ class ConfigFile {
         await fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
     }
   };
-
-  private prompForOverwrite = async (): Promise<{ overwrite: boolean }> =>
-    prompt({
-      type: 'toggle',
-      name: 'overwrite',
-      message: chalk`{yellow File already exists, do you want to overwrite it?}`,
-      required: true,
-    });
 
   private readFile = async (filePath: string) => fs.readFile(filePath, { encoding: 'utf-8' });
 

@@ -13,9 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const promises_1 = __importDefault(require("fs/promises"));
-const enquirer_1 = require("enquirer");
 const find_up_1 = __importDefault(require("find-up"));
-const chalk_1 = __importDefault(require("chalk"));
 const Shell_1 = __importDefault(require("../Shell"));
 const FileUtil_1 = __importDefault(require("../FileUtil"));
 const Logger_1 = __importDefault(require("../Logger"));
@@ -50,7 +48,7 @@ class ConfigFile {
             try {
                 const fileExists = yield FileUtil_1.default.fileExist(this.destinationPath);
                 if (fileExists) {
-                    const { overwrite } = yield this.prompForOverwrite();
+                    const { overwrite } = yield Shell_1.default.alreadyExistPromp('File already exists, do you want to overwrite it?');
                     if (overwrite) {
                         promises_1.default.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
                         return Logger_1.default.log('green', 'Config file successfully created!');
@@ -62,14 +60,6 @@ class ConfigFile {
                 if (error.code === 'ENOENT')
                     yield promises_1.default.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
             }
-        });
-        this.prompForOverwrite = () => __awaiter(this, void 0, void 0, function* () {
-            return enquirer_1.prompt({
-                type: 'toggle',
-                name: 'overwrite',
-                message: chalk_1.default `{yellow File already exists, do you want to overwrite it?}`,
-                required: true,
-            });
         });
         this.readFile = (filePath) => __awaiter(this, void 0, void 0, function* () { return promises_1.default.readFile(filePath, { encoding: 'utf-8' }); });
         this.getConfig = () => __awaiter(this, void 0, void 0, function* () {

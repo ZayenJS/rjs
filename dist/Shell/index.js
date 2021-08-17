@@ -12,6 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const chalk_1 = __importDefault(require("chalk"));
+const enquirer_1 = require("enquirer");
 const ConfigFile_1 = __importDefault(require("../ConfigFile"));
 class Shell {
     constructor() {
@@ -21,6 +23,14 @@ class Shell {
                 baseOptions[key] = options[key];
             }
             return baseOptions !== null && baseOptions !== void 0 ? baseOptions : options;
+        });
+        this.alreadyExistPromp = (message) => __awaiter(this, void 0, void 0, function* () {
+            return enquirer_1.prompt({
+                type: 'toggle',
+                name: 'overwrite',
+                message: chalk_1.default `{yellow ${message}}`,
+                required: true,
+            });
         });
     }
 }
