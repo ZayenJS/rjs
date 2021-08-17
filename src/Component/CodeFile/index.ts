@@ -1,11 +1,11 @@
 import path from 'path';
 
 import { ComponentOptions } from '../../@types';
-import { isFileHandle } from '../../utils';
 
 import fileUtil from '../../FileUtil';
 import shell from '../../Shell';
 import logger from '../../Logger';
+import { hasStyles } from '../../utils';
 
 export class CodeFile {
   constructor(private name: string, private options: ComponentOptions) {}
@@ -91,11 +91,11 @@ export class CodeFile {
     return [
       this.addLine(
         0,
-        ['css', 'scss'].includes(styling) && !cssModules ? `import './${name}.${styling}';` : null,
+        hasStyles(this.options) && !cssModules ? `import './${name}.${styling}';` : null,
       ),
       this.addLine(
         0,
-        ['css', 'scss'].includes(styling) && cssModules
+        hasStyles(this.options) && cssModules
           ? `import classes from './${name}.module.${styling}';`
           : null,
       ),
@@ -157,11 +157,11 @@ export class CodeFile {
   };
 
   private getClassName = (name: string) => {
-    const { styling, cssModules } = this.options;
+    const { cssModules } = this.options;
 
     let className = '';
 
-    if (['css', 'scss'].includes(styling)) {
+    if (hasStyles(this.options)) {
       className = ` className=${cssModules ? '{classes.Container}' : `'${name}'`}`;
     }
 

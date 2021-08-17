@@ -1,11 +1,4 @@
-import fs from 'fs/promises';
+import { ComponentOptions, ConfigFileOptions } from '../@types';
 
-export const hasNoOptions = (options: {}) => Object.keys(options).length <= 0;
-
-export const isFileHandle = (data: any): data is fs.FileHandle => {
-  try {
-    return 'close' in data;
-  } catch {
-    return false;
-  }
-};
+export const hasStyles = (options: ComponentOptions | ConfigFileOptions) =>
+  options.styling !== 'none';

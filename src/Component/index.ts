@@ -4,6 +4,7 @@ import shell from '../Shell';
 import logger from '../Logger';
 import { CodeFile } from './CodeFile';
 import { StyleFile } from './StyleFile';
+import { hasStyles } from '../utils';
 
 class Component {
   private name: string = '';
@@ -27,11 +28,14 @@ class Component {
     const codeFile = new CodeFile(componentName, options);
     const generatedCodeFile = await codeFile.generate();
 
-    const styleFile = new StyleFile(componentName, options);
-    const generatedStyleFile = await styleFile.generate();
-
     if (generatedCodeFile) logger.italic('green', `Component file created successfully!`);
-    if (generatedStyleFile) logger.italic('green', `Style file created successfully!`);
+
+    // only creates a style file if styling is css or scss
+    if (hasStyles(options)) {
+      const styleFile = new StyleFile(componentName, options);
+      const generatedStyleFile = await styleFile.generate();
+      if (generatedStyleFile) logger.italic('green', `Style file created successfully!`);
+    }
   };
 }
 

@@ -2,7 +2,7 @@ export interface ConfigFileOptions {
   type: 'react' | 'next';
   importReact: boolean;
   typescript: boolean;
-  styling: 'scss' | 'css' | 'mui' | 'styled';
+  styling: 'scss' | 'css' | 'none';
   cssModules: boolean;
   componentType: 'function' | 'class';
   componentDir: string;
@@ -17,7 +17,7 @@ export interface ComponentOptions {
   importReact: boolean;
   componentDir: string;
   typescript: boolean;
-  styling: 'scss' | 'css' | 'mui' | 'styled' | 'none';
+  styling: 'scss' | 'css' | 'none';
   cssModules: boolean;
   componentType: 'function' | 'class';
   tag: string;

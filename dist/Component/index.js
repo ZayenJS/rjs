@@ -16,6 +16,7 @@ const Shell_1 = __importDefault(require("../Shell"));
 const Logger_1 = __importDefault(require("../Logger"));
 const CodeFile_1 = require("./CodeFile");
 const StyleFile_1 = require("./StyleFile");
+const utils_1 = require("../utils");
 class Component {
     constructor() {
         this.name = '';
@@ -36,12 +37,14 @@ class Component {
             this.options = Object.assign(Object.assign({}, options), { tag: (_a = options.tag) !== null && _a !== void 0 ? _a : 'div' });
             const codeFile = new CodeFile_1.CodeFile(componentName, options);
             const generatedCodeFile = yield codeFile.generate();
-            const styleFile = new StyleFile_1.StyleFile(componentName, options);
-            const generatedStyleFile = yield styleFile.generate();
             if (generatedCodeFile)
                 Logger_1.default.italic('green', `Component file created successfully!`);
-            if (generatedStyleFile)
-                Logger_1.default.italic('green', `Style file created successfully!`);
+            if (utils_1.hasStyles(options)) {
+                const styleFile = new StyleFile_1.StyleFile(componentName, options);
+                const generatedStyleFile = yield styleFile.generate();
+                if (generatedStyleFile)
+                    Logger_1.default.italic('green', `Style file created successfully!`);
+            }
         });
     }
 }

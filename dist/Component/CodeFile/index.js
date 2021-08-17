@@ -16,6 +16,7 @@ exports.CodeFile = void 0;
 const path_1 = __importDefault(require("path"));
 const FileUtil_1 = __importDefault(require("../../FileUtil"));
 const Shell_1 = __importDefault(require("../../Shell"));
+const utils_1 = require("../../utils");
 class CodeFile {
     constructor(name, options) {
         this.name = name;
@@ -74,8 +75,8 @@ class CodeFile {
         this.getStylingImports = (name) => {
             const { cssModules, styling } = this.options;
             return [
-                this.addLine(0, ['css', 'scss'].includes(styling) && !cssModules ? `import './${name}.${styling}';` : null),
-                this.addLine(0, ['css', 'scss'].includes(styling) && cssModules
+                this.addLine(0, utils_1.hasStyles(this.options) && !cssModules ? `import './${name}.${styling}';` : null),
+                this.addLine(0, utils_1.hasStyles(this.options) && cssModules
                     ? `import classes from './${name}.module.${styling}';`
                     : null),
                 this.addLine(0, styling !== 'none' ? '' : null),
@@ -119,9 +120,9 @@ class CodeFile {
             ];
         };
         this.getClassName = (name) => {
-            const { styling, cssModules } = this.options;
+            const { cssModules } = this.options;
             let className = '';
-            if (['css', 'scss'].includes(styling)) {
+            if (utils_1.hasStyles(this.options)) {
                 className = ` className=${cssModules ? '{classes.Container}' : `'${name}'`}`;
             }
             return className;
