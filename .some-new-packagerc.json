@@ -1,9 +1,9 @@
 {
   "type": "react",
   "importReact": false,
-  "typescript": true,
+  "typescript": false,
   "styling": "scss",
-  "cssModules": true,
+  "cssModules": false,
   "componentType": "function",
   "componentDir": "src/components"
 }

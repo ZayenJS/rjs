@@ -24,8 +24,8 @@ class Component {
     options = await shell.parseOptions(options);
     this.options = { ...options, tag: options.tag ?? 'div' };
 
-    //! ACTIVATE THIS TO TEST FILE
-    logger.exit(this.getData());
+    //? ACTIVATE THIS TO TEST OUTPUT IN SHELL
+    // logger.exit(this.getData());
 
     const codeFile = await fileUtil.createFile(
       path.join(options.componentDir, componentName),
@@ -63,14 +63,45 @@ class Component {
   };
 
   public getData = () => {
-    // TODO: take class component into account
-    const { componentType, cssModules, importReact, styling, typescript, tag } = this.options;
+    return [
+      ...this.getHeaderImports(),
+      ...this.getStylingImports(),
+      ...this.getComponentBody(),
+      this.addLine(0, `export default ${this.name};`),
+    ]
+      .filter((line) => typeof line === 'string')
+      .join('\n');
+  };
+
+  private getHeaderImports = () => {
+    const { componentType, importReact, typescript } = this.options;
+
+    let headerImport = null;
+
+    if (importReact && typescript) {
+      headerImport = `import React, { FC } from 'react';`;
+    } else if (importReact && !typescript) {
+      headerImport = "import React from 'react';";
+    } else if (!importReact && typescript) {
+      headerImport = "import { FC } from 'react';";
+    }
+
+    if (componentType === 'class') {
+      headerImport = importReact
+        ? `import React, { Component } from 'react';`
+        : `import { Component } from 'react';`;
+    }
 
     return [
-      this.addLine(0, importReact && typescript ? `import React, { FC } from 'react';` : null),
-      this.addLine(0, importReact && !typescript ? "import React from 'react';" : null),
-      this.addLine(0, !importReact && typescript ? "import { FC } from 'react';" : null),
-      this.addLine(0, importReact || typescript ? '' : null),
+      this.addLine(0, headerImport),
+      this.addLine(0, importReact || typescript || componentType === 'class' ? '' : null),
+    ];
+  };
+
+  private getStylingImports = () => {
+    const { cssModules, styling } = this.options;
+
+    return [
       this.addLine(
         0,
         ['css', 'scss'].includes(styling) && !cssModules
@@ -80,12 +111,61 @@ class Component {
       this.addLine(
         0,
         ['css', 'scss'].includes(styling) && cssModules
-          ? `import './${this.name}.module.${styling}';`
+          ? `import classes from './${this.name}.module.${styling}';`
           : null,
       ),
-      this.addLine(0, importReact || typescript ? '' : null),
+      this.addLine(0, styling !== 'none' ? '' : null),
+    ];
+  };
+
+  private getComponentBody = () => {
+    const { componentType, importReact, typescript, tag } = this.options;
+
+    const component =
+      componentType === 'function' ? this.getFunctionComponent() : this.getClassComponent();
+
+    return [
       this.addLine(0, typescript ? `export interface ${this.name}Props {}` : null),
       this.addLine(0, importReact || typescript ? '' : null),
+      this.addLine(
+        0,
+        typescript && componentType === 'class' ? `export interface ${this.name}State {}` : null,
+      ),
+      this.addLine(0, typescript && componentType === 'class' ? '' : null),
+      ...component,
+    ];
+  };
+
+  private getClassComponent = () => {
+    const { styling, cssModules, typescript, tag } = this.options;
+
+    let className = '';
+
+    if (['css', 'scss'].includes(styling)) {
+      className = ` className=${cssModules ? '{classes.Container}' : `'${this.name}'`}`;
+    }
+
+    return [
+      this.addLine(
+        0,
+        `class ${this.name} extends Component${
+          typescript ? `<${this.name}Props, ${this.name}State>` : ''
+        } {`,
+      ),
+      this.addLine(1, 'state = {};'),
+      this.addLine(0, ''),
+      this.addLine(1, 'render () {'),
+      this.addLine(2, `return <${tag}${className}>${this.name} Class Component</${tag}>;`),
+      this.addLine(1, '}'),
+      this.addLine(0, '}'),
+      this.addLine(0, ''),
+    ];
+  };
+
+  private getFunctionComponent = () => {
+    const { typescript, tag } = this.options;
+
+    return [
       this.addLine(0, `const ${this.name}${typescript ? `: FC<${this.name}Props>` : ''} = () => {`),
       this.addLine(1, 'return ('),
       // TODO: apply class to div
@@ -93,48 +173,8 @@ class Component {
       this.addLine(1, ');'),
       this.addLine(0, '}'),
       this.addLine(0, ''),
-      this.addLine(0, `export default ${this.name};`),
-    ]
-      .filter((line) => typeof line === 'string')
-      .join('\n');
+    ];
   };
 }
 
 export default new Component();
-
-// return [
-//     line(0, ostr(props === 'jsdoc', '//@ts-check')),
-//     line(0, ostr(importReact, "import React from 'react';")),
-//     line(0, ostr(createStylesFile && stylingModule, `import classes from './${kcName}.module.${styling}';`)),
-//     line(0, ostr(createStylesFile && !stylingModule, `import './${kcName}.${styling}';`)),
-//     line(0, ostr(styling === 'jss', "import { createUseStyles } from 'react-jss';")),
-//     line(0, ostr(styling === 'mui', "import { makeStyles } from '@material-ui/core';")),
-//     line(0, ostr(props === 'prop-types', "import PropTypes from 'prop-types';")),
-//     '',
-//     line(0, ostr(styling === 'jss', 'const useStyles = createUseStyles({});')),
-//     line(0, ostr(styling === 'mui', `const useStyles = makeStyles((theme${cstr(typescript, ': Theme')}) => {});`)),
-//     line(0, ostr(styling === 'jss' || styling === 'mui', '')),
-
-//     line(0, ostr(TSProps, `export interface ${pcName}Props {}`)),
-//     line(0, ostr(TSProps, '')),
-
-//     line(0, ostr(props === 'jsdoc', '/**')),
-//     line(0, ostr(props === 'jsdoc', ` * @typedef ${interfaceName}`)),
-//     line(0, ostr(props === 'jsdoc', ' */')),
-
-//     line(0, ostr(props === 'jsdoc', '/**')),
-//     line(0, ostr(props === 'jsdoc', ` * @type {${componentType}}`)),
-//     line(0, ostr(props === 'jsdoc', ' */')),
-
-//     line(0, `export const ${pcName}${cstr(TSProps, `: ${componentType}`)} = (${cstr(children, '{ children }')}) => {`),
-//     '',
-//     line(1, ostr(styling === 'jss' || styling === 'mui', 'const classes = useStyles();')),
-//     line(1, ostr(styling === 'jss' || styling === 'mui', '')),
-
-//     line(1, 'return ('),
-//     line(2, `${children ? '<div>{children}</div>' : '<div />'}`),
-//     line(1, ');'),
-//     line(0, '}'),
-//     line(0, ostr(props === 'prop-types', '')),
-//     line(0, ostr(props === 'prop-types', `${pcName}.propTypes = {}`))
-//   ].filter(line => typeof line === 'string').join('\n');
