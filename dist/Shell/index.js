@@ -12,18 +12,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.App = void 0;
-const Component_1 = __importDefault(require("../Component"));
-class App {
+const chalk_1 = __importDefault(require("chalk"));
+const enquirer_1 = require("enquirer");
+const ConfigFile_1 = __importDefault(require("../ConfigFile"));
+class Shell {
     constructor() {
-        this.createReactApp = () => __awaiter(this, void 0, void 0, function* () {
-            const componentOptions = Component_1.default.getDefaultOptions();
-            yield Component_1.default.generate('App', componentOptions);
+        this.parseOptions = (options) => __awaiter(this, void 0, void 0, function* () {
+            const baseOptions = yield ConfigFile_1.default.getConfig();
+            for (const key in options) {
+                baseOptions[key] = options[key];
+            }
+            return baseOptions !== null && baseOptions !== void 0 ? baseOptions : options;
         });
-        this.createNextApp = () => { };
+        this.alreadyExistPromp = (message) => __awaiter(this, void 0, void 0, function* () {
+            return enquirer_1.prompt({
+                type: 'toggle',
+                name: 'overwrite',
+                message: chalk_1.default `{yellow ${message}}`,
+                required: true,
+            });
+        });
     }
 }
-exports.App = App;
-App.initProject = () => __awaiter(void 0, void 0, void 0, function* () { });
-exports.default = new App();
+exports.default = new Shell();
 //# sourceMappingURL=index.js.map

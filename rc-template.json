@@ -6,5 +6,7 @@
   "cssModules": false,
   "componentType": "function",
   "componentDir": "src/components",
+  "containerDir": "src/containers",
+  "pageDir": "src/pages",
   "packageManager": "npm"
 }

@@ -12,33 +12,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const find_up_1 = __importDefault(require("find-up"));
-const ConfigFile_1 = __importDefault(require("../ConfigFile"));
-const constants_1 = require("../constants");
+const Shell_1 = __importDefault(require("../Shell"));
 const Logger_1 = __importDefault(require("../Logger"));
+const CodeFile_1 = require("./CodeFile");
+const StyleFile_1 = require("./StyleFile");
 class Component {
     constructor() {
         this.name = '';
+        this.options = {
+            importReact: false,
+            typescript: false,
+            styling: 'css',
+            cssModules: false,
+            componentType: 'function',
+            componentDir: 'src/components',
+            tag: 'div',
+        };
+        this.getName = () => this.name;
+        this.getDefaultOptions = () => this.options;
         this.generate = (componentName, options) => __awaiter(this, void 0, void 0, function* () {
-            this.name = componentName;
-            options = yield this.parseOptions(options);
-            console.log(options);
-            Logger_1.default.debug('generate component');
-        });
-        this.parseOptions = (cliOptions) => __awaiter(this, void 0, void 0, function* () {
-            const baseOptions = yield this.getRCFileConfigData();
-            for (const key in cliOptions) {
-                baseOptions[key] = cliOptions[key];
-            }
-            return baseOptions;
-        });
-        this.getRCFileConfigData = () => __awaiter(this, void 0, void 0, function* () {
-            const rcFilePath = yield find_up_1.default(`.${constants_1.PACKAGE_NAME}rc.json`);
-            let rcFileJsonContent;
-            if (rcFilePath) {
-                rcFileJsonContent = yield ConfigFile_1.default.parse(rcFilePath);
-                return JSON.parse(rcFileJsonContent);
-            }
+            var _a;
+            options = yield Shell_1.default.parseOptions(options);
+            this.options = Object.assign(Object.assign({}, options), { tag: (_a = options.tag) !== null && _a !== void 0 ? _a : 'div' });
+            const codeFile = new CodeFile_1.CodeFile(componentName, options);
+            const generatedCodeFile = yield codeFile.generate();
+            const styleFile = new StyleFile_1.StyleFile(componentName, options);
+            const generatedStyleFile = yield styleFile.generate();
+            if (generatedCodeFile)
+                Logger_1.default.italic('green', `Component file created successfully!`);
+            if (generatedStyleFile)
+                Logger_1.default.italic('green', `Style file created successfully!`);
         });
     }
 }

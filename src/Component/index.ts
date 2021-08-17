@@ -1,40 +1,37 @@
-import findUp from 'find-up';
-import configFile from '../ConfigFile';
-import { PACKAGE_NAME } from '../constants';
+import { ComponentOptions } from '../@types';
+
+import shell from '../Shell';
 import logger from '../Logger';
-import { hasNoOptions } from '../utils';
+import { CodeFile } from './CodeFile';
+import { StyleFile } from './StyleFile';
 
 class Component {
-  public name: string = '';
-
-  public generate = async (componentName: string, options: any) => {
-    this.name = componentName;
-
-    options = await this.parseOptions(options);
-
-    console.log(options);
-
-    logger.debug('generate component');
+  private name: string = '';
+  private options: ComponentOptions = {
+    importReact: false,
+    typescript: false,
+    styling: 'css',
+    cssModules: false,
+    componentType: 'function',
+    componentDir: 'src/components',
+    tag: 'div',
   };
 
-  private parseOptions = async (cliOptions: any) => {
-    const baseOptions = await this.getRCFileConfigData();
+  public getName = () => this.name;
+  public getDefaultOptions = () => this.options;
 
-    for (const key in cliOptions) {
-      baseOptions[key] = cliOptions[key];
-    }
+  public generate = async (componentName: string, options: ComponentOptions) => {
+    options = await shell.parseOptions(options);
+    this.options = { ...options, tag: options.tag ?? 'div' };
 
-    return baseOptions;
-  };
+    const codeFile = new CodeFile(componentName, options);
+    const generatedCodeFile = await codeFile.generate();
 
-  private getRCFileConfigData = async () => {
-    const rcFilePath = await findUp(`.${PACKAGE_NAME}rc.json`);
+    const styleFile = new StyleFile(componentName, options);
+    const generatedStyleFile = await styleFile.generate();
 
-    let rcFileJsonContent;
-    if (rcFilePath) {
-      rcFileJsonContent = await configFile.parse(rcFilePath);
-      return JSON.parse(rcFileJsonContent);
-    }
+    if (generatedCodeFile) logger.italic('green', `Component file created successfully!`);
+    if (generatedStyleFile) logger.italic('green', `Style file created successfully!`);
   };
 }
 
