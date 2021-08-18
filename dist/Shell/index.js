@@ -12,15 +12,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const path_1 = __importDefault(require("path"));
 const chalk_1 = __importDefault(require("chalk"));
 const enquirer_1 = require("enquirer");
 const ConfigFile_1 = __importDefault(require("../ConfigFile"));
+const Logger_1 = __importDefault(require("../Logger"));
 class Shell {
     constructor() {
         this.parseOptions = (options) => __awaiter(this, void 0, void 0, function* () {
             const baseOptions = yield ConfigFile_1.default.getConfig();
+            let dirPath = options.componentDir;
             for (const key in options) {
                 baseOptions[key] = options[key];
+            }
+            if (dirPath) {
+                if (dirPath.startsWith('./')) {
+                    const cleanedDirPath = dirPath.split('./')[1];
+                    dirPath = path_1.default.join(process.cwd(), cleanedDirPath);
+                }
+                else if (dirPath.startsWith('/')) {
+                    Logger_1.default.exit('Absolute paths are not supported, please use a relative one.');
+                }
+                else {
+                    dirPath = path_1.default.join(process.cwd(), dirPath);
+                }
+                baseOptions.componentDir = dirPath;
             }
             return baseOptions !== null && baseOptions !== void 0 ? baseOptions : options;
         });

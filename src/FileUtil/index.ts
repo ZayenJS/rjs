@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import logger from '../Logger';
 
 import findUp, { exists } from 'find-up';
+import configFile from '../ConfigFile';
 
 class FileUtil {
   public createFile = async (
@@ -14,10 +15,24 @@ class FileUtil {
     fileName: string,
   ): Promise<string | undefined> => {
     try {
-      const filePath = path.join(directoryPath, fileName);
-      const dirExists = await this.checkDirectoryExistence(directoryPath);
+      await this.checkRootDir();
+
+      const folderName = fileName.split('.')[0];
+      let filePath = path.join(directoryPath, fileName);
+      filePath = (await this.getFileAbsolutePath(filePath)) ?? directoryPath;
+      directoryPath = filePath?.split(fileName)[0];
+
+      const dirExists = await exists(path.join(directoryPath));
 
       if (!dirExists) {
+        const { create } = await this.createPathPromp(
+          directoryPath,
+          "This path doesn't exist, do you want to create it?",
+        );
+        if (!create) {
+          logger.exit('Action canceled by user, path and file not created.');
+        }
+
         await this.createDirecoryRecursively(directoryPath);
         logger.italic('green', `Directory ${directoryPath} created successfully!`);
       }
@@ -31,15 +46,33 @@ class FileUtil {
     }
   };
 
-  private checkDirectoryExistence = async (directoryPath: string) => {
+  private checkRootDir = async () => {
     const packageJsonDirPath = await findUp('package.json');
 
-    let rootDirPath = '';
     if (!packageJsonDirPath)
-      return logger.exit('Package.json not found... Make sure you are in the right directory.');
+      logger.exit('Package.json not found... Make sure you are in the right directory.');
 
-    rootDirPath = packageJsonDirPath.split('package.json')[0];
-    return exists(path.join(rootDirPath, directoryPath));
+    return packageJsonDirPath?.split('package.json')[0];
+  };
+
+  private getFileAbsolutePath = async (filePath: string) => {
+    const rootDirPath = await this.checkRootDir();
+    const { type } = await configFile.getConfig();
+
+    if (type === 'react' && rootDirPath) {
+      const splitRootDirPath = rootDirPath?.split('/').filter((word) => word !== '');
+      const rootDirname = splitRootDirPath[splitRootDirPath.length - 1];
+
+      const splitFilePath = filePath.split('/');
+      const rootDirIndex = splitFilePath.indexOf(rootDirname);
+
+      // check to verify that src is the folder next to the root folder in the array
+      // if so the file will be generated inisde the src folder
+      if (splitFilePath[rootDirIndex + 1] !== 'src')
+        logger.exit('Files can only be created in src folder when using react, please try again.');
+
+      return filePath;
+    }
   };
 
   public writeToFile = async (path: string, data: string) => {

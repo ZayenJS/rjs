@@ -15,11 +15,9 @@ export class CodeFile {
     // logger.exit(this.getData());
 
     const codeFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
+    let dirPath = this.options.componentDir;
 
-    const codeFile = await fileUtil.createFile(
-      path.join(this.options.componentDir, this.name),
-      codeFileName,
-    );
+    const codeFile = await fileUtil.createFile(path.join(dirPath, this.name), codeFileName);
 
     let response = true;
 
@@ -32,10 +30,7 @@ export class CodeFile {
     }
 
     if (response) {
-      await fileUtil.writeToFile(
-        path.join(this.options.componentDir, this.name, codeFileName),
-        this.getData(),
-      );
+      await fileUtil.writeToFile(path.join(dirPath, this.name, codeFileName), this.getData());
     }
 
     return response;

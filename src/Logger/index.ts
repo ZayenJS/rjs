@@ -3,6 +3,7 @@ import chalk from 'chalk';
 class Logger {
   public exit = (...errors: unknown[]) => {
     console.error(chalk`[{red EXIT}]:`, ...errors);
+
     process.exit(1);
   };
 

@@ -23,14 +23,15 @@ class CodeFile {
         this.options = options;
         this.generate = () => __awaiter(this, void 0, void 0, function* () {
             const codeFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
-            const codeFile = yield FileUtil_1.default.createFile(path_1.default.join(this.options.componentDir, this.name), codeFileName);
+            let dirPath = this.options.componentDir;
+            const codeFile = yield FileUtil_1.default.createFile(path_1.default.join(dirPath, this.name), codeFileName);
             let response = true;
             if (codeFile) {
                 const { overwrite } = yield Shell_1.default.alreadyExistPromp(`The component ${codeFileName} already exists, do you want to overwrite it?`);
                 response = overwrite;
             }
             if (response) {
-                yield FileUtil_1.default.writeToFile(path_1.default.join(this.options.componentDir, this.name, codeFileName), this.getData());
+                yield FileUtil_1.default.writeToFile(path_1.default.join(dirPath, this.name, codeFileName), this.getData());
             }
             return response;
         });

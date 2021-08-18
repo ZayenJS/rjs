@@ -23,6 +23,7 @@ class Component {
 
   public generate = async (componentName: string, options: ComponentOptions) => {
     options = await shell.parseOptions(options);
+
     this.options = { ...options, tag: options.tag ?? 'div' };
 
     const codeFile = new CodeFile(componentName, options);

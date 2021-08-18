@@ -38,13 +38,23 @@ const enquirer_1 = require("enquirer");
 const chalk_1 = __importDefault(require("chalk"));
 const Logger_1 = __importDefault(require("../Logger"));
 const find_up_1 = __importStar(require("find-up"));
+const ConfigFile_1 = __importDefault(require("../ConfigFile"));
 class FileUtil {
     constructor() {
         this.createFile = (directoryPath, fileName) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
-                const filePath = path_1.default.join(directoryPath, fileName);
-                const dirExists = yield this.checkDirectoryExistence(directoryPath);
+                yield this.checkRootDir();
+                const folderName = fileName.split('.')[0];
+                let filePath = path_1.default.join(directoryPath, fileName);
+                filePath = (_a = (yield this.getFileAbsolutePath(filePath))) !== null && _a !== void 0 ? _a : directoryPath;
+                directoryPath = filePath === null || filePath === void 0 ? void 0 : filePath.split(fileName)[0];
+                const dirExists = yield find_up_1.exists(path_1.default.join(directoryPath));
                 if (!dirExists) {
+                    const { create } = yield this.createPathPromp(directoryPath, "This path doesn't exist, do you want to create it?");
+                    if (!create) {
+                        Logger_1.default.exit('Action canceled by user, path and file not created.');
+                    }
                     yield this.createDirecoryRecursively(directoryPath);
                     Logger_1.default.italic('green', `Directory ${directoryPath} created successfully!`);
                 }
@@ -57,13 +67,24 @@ class FileUtil {
                 Logger_1.default.exit('Path not created.');
             }
         });
-        this.checkDirectoryExistence = (directoryPath) => __awaiter(this, void 0, void 0, function* () {
+        this.checkRootDir = () => __awaiter(this, void 0, void 0, function* () {
             const packageJsonDirPath = yield find_up_1.default('package.json');
-            let rootDirPath = '';
             if (!packageJsonDirPath)
-                return Logger_1.default.exit('Package.json not found... Make sure you are in the right directory.');
-            rootDirPath = packageJsonDirPath.split('package.json')[0];
-            return find_up_1.exists(path_1.default.join(rootDirPath, directoryPath));
+                Logger_1.default.exit('Package.json not found... Make sure you are in the right directory.');
+            return packageJsonDirPath === null || packageJsonDirPath === void 0 ? void 0 : packageJsonDirPath.split('package.json')[0];
+        });
+        this.getFileAbsolutePath = (filePath) => __awaiter(this, void 0, void 0, function* () {
+            const rootDirPath = yield this.checkRootDir();
+            const { type } = yield ConfigFile_1.default.getConfig();
+            if (type === 'react' && rootDirPath) {
+                const splitRootDirPath = rootDirPath === null || rootDirPath === void 0 ? void 0 : rootDirPath.split('/').filter((word) => word !== '');
+                const rootDirname = splitRootDirPath[splitRootDirPath.length - 1];
+                const splitFilePath = filePath.split('/');
+                const rootDirIndex = splitFilePath.indexOf(rootDirname);
+                if (splitFilePath[rootDirIndex + 1] !== 'src')
+                    Logger_1.default.exit('Files can only be created in src folder when using react, please try again.');
+                return filePath;
+            }
         });
         this.writeToFile = (path, data) => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -88,7 +109,7 @@ class FileUtil {
             try {
                 return !!(yield promises_1.default.readFile(path, { encoding: 'utf-8' }));
             }
-            catch (_a) {
+            catch (_b) {
                 return false;
             }
         });
