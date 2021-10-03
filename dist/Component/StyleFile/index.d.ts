@@ -1,7 +1,5 @@
-import { ComponentOptions } from '../../@types';
-export declare class StyleFile {
-    private name;
-    private options;
-    constructor(name: string, options: ComponentOptions);
+import { BaseFile } from '../BaseFile/BaseFile';
+export declare class StyleFile extends BaseFile {
     generate: () => Promise<boolean>;
+    protected getData: (name?: string) => Promise<string>;
 }

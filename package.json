@@ -10,7 +10,7 @@
     "build:watch": "tsc --pretty --watch"
   },
   "bin": {
-    "react": "./dist/index.js"
+    "r8y": "./dist/index.js"
   },
   "keywords": [
     "react",

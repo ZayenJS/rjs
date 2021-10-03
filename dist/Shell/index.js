@@ -19,32 +19,54 @@ const ConfigFile_1 = __importDefault(require("../ConfigFile"));
 const Logger_1 = __importDefault(require("../Logger"));
 class Shell {
     constructor() {
-        this.parseOptions = (options) => __awaiter(this, void 0, void 0, function* () {
-            const baseOptions = yield ConfigFile_1.default.getConfig();
+        this.parseOptions = (options, init = false) => __awaiter(this, void 0, void 0, function* () {
+            const baseOptions = yield ConfigFile_1.default.getConfig(init);
             let dirPath = options.componentDir;
             for (const key in options) {
                 baseOptions[key] = options[key];
             }
-            if (dirPath) {
-                if (dirPath.startsWith('./')) {
+            if (dirPath && dirPath.startsWith('/')) {
+                Logger_1.default.exit('Absolute paths are not supported, please use a relative one.');
+            }
+            else if (init && dirPath && !dirPath.includes('src') && baseOptions.type === 'react') {
+                baseOptions.componentDir = `src/${dirPath}`;
+            }
+            if (!init && dirPath) {
+                if (dirPath && dirPath.startsWith('./')) {
                     const cleanedDirPath = dirPath.split('./')[1];
                     dirPath = path_1.default.join(process.cwd(), cleanedDirPath);
-                }
-                else if (dirPath.startsWith('/')) {
-                    Logger_1.default.exit('Absolute paths are not supported, please use a relative one.');
                 }
                 else {
                     dirPath = path_1.default.join(process.cwd(), dirPath);
                 }
                 baseOptions.componentDir = dirPath;
             }
-            return baseOptions !== null && baseOptions !== void 0 ? baseOptions : options;
+            return {
+                type: baseOptions.type,
+                importReact: baseOptions.importReact,
+                typescript: baseOptions.typescript,
+                styling: baseOptions.styling,
+                cssModules: baseOptions.cssModules,
+                componentType: baseOptions.componentType,
+                componentDir: baseOptions.componentDir,
+                containerDir: baseOptions.containerDir,
+                pageDir: baseOptions.pageDir,
+                packageManager: baseOptions.packageManager,
+            };
         });
         this.alreadyExistPromp = (message) => __awaiter(this, void 0, void 0, function* () {
             return enquirer_1.prompt({
                 type: 'toggle',
                 name: 'overwrite',
                 message: chalk_1.default `{yellow ${message}}`,
+                required: true,
+            });
+        });
+        this.togglePrompt = (name, message) => __awaiter(this, void 0, void 0, function* () {
+            return enquirer_1.prompt({
+                type: 'toggle',
+                name,
+                message,
                 required: true,
             });
         });

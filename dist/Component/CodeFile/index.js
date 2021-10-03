@@ -17,10 +17,10 @@ const path_1 = __importDefault(require("path"));
 const FileUtil_1 = __importDefault(require("../../FileUtil"));
 const Shell_1 = __importDefault(require("../../Shell"));
 const utils_1 = require("../../utils");
-class CodeFile {
-    constructor(name, options) {
-        this.name = name;
-        this.options = options;
+const BaseFile_1 = require("../BaseFile/BaseFile");
+class CodeFile extends BaseFile_1.BaseFile {
+    constructor() {
+        super(...arguments);
         this.generate = () => __awaiter(this, void 0, void 0, function* () {
             const codeFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
             let dirPath = this.options.componentDir;
@@ -35,15 +35,9 @@ class CodeFile {
             }
             return response;
         });
-        this.addLine = (tabs = 0, str = null) => {
-            if (str === null) {
-                return null;
-            }
-            return str ? '\t'.repeat(tabs) + str : '';
-        };
         this.getData = (name = this.name) => {
             return [
-                ...this.getHeaderImports(name),
+                ...this.getHeaderImports(),
                 ...this.getStylingImports(name),
                 ...this.getComponentBody(name),
                 this.addLine(0, `export default ${name};`),
@@ -51,7 +45,7 @@ class CodeFile {
                 .filter((line) => typeof line === 'string')
                 .join('\n');
         };
-        this.getHeaderImports = (name) => {
+        this.getHeaderImports = () => {
             const { componentType, importReact, typescript } = this.options;
             let headerImport = null;
             if (importReact && typescript) {
@@ -124,7 +118,7 @@ class CodeFile {
             const { cssModules } = this.options;
             let className = '';
             if (utils_1.hasStyles(this.options)) {
-                className = ` className=${cssModules ? '{classes.Container}' : `'${name}'`}`;
+                className = ` className=${cssModules ? '{classes.Container}' : `'${utils_1.toKebabCase(name)}'`}`;
             }
             return className;
         };

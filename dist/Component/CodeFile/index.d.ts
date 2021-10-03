@@ -1,11 +1,7 @@
-import { ComponentOptions } from '../../@types';
-export declare class CodeFile {
-    private name;
-    private options;
-    constructor(name: string, options: ComponentOptions);
+import { BaseFile } from '../BaseFile/BaseFile';
+export declare class CodeFile extends BaseFile {
     generate: () => Promise<boolean>;
-    private addLine;
-    private getData;
+    protected getData: (name?: string) => string;
     private getHeaderImports;
     private getStylingImports;
     private getComponentBody;

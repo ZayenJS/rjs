@@ -35,12 +35,12 @@ class Component {
             var _a;
             options = yield Shell_1.default.parseOptions(options);
             this.options = Object.assign(Object.assign({}, options), { tag: (_a = options.tag) !== null && _a !== void 0 ? _a : 'div' });
-            const codeFile = new CodeFile_1.CodeFile(componentName, options);
+            const codeFile = new CodeFile_1.CodeFile(componentName, this.options);
             const generatedCodeFile = yield codeFile.generate();
             if (generatedCodeFile)
                 Logger_1.default.italic('green', `Component file created successfully!`);
-            if (utils_1.hasStyles(options)) {
-                const styleFile = new StyleFile_1.StyleFile(componentName, options);
+            if (utils_1.hasStyles(this.options)) {
+                const styleFile = new StyleFile_1.StyleFile(componentName, this.options);
                 const generatedStyleFile = yield styleFile.generate();
                 if (generatedStyleFile)
                     Logger_1.default.italic('green', `Style file created successfully!`);

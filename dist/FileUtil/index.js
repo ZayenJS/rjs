@@ -51,7 +51,7 @@ class FileUtil {
                 directoryPath = filePath === null || filePath === void 0 ? void 0 : filePath.split(fileName)[0];
                 const dirExists = yield find_up_1.exists(path_1.default.join(directoryPath));
                 if (!dirExists) {
-                    const { create } = yield this.createPathPromp(directoryPath, "This path doesn't exist, do you want to create it?");
+                    const { create } = yield this.createPathPromp(directoryPath, `The path ${filePath} doesn't exist, do you want to create it?`);
                     if (!create) {
                         Logger_1.default.exit('Action canceled by user, path and file not created.');
                     }

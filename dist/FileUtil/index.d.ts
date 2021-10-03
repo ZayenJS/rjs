@@ -1,7 +1,7 @@
 declare class FileUtil {
     createFile: (directoryPath: string, fileName: string) => Promise<string | undefined>;
     private checkRootDir;
-    private getFileAbsolutePath;
+    getFileAbsolutePath: (filePath: string) => Promise<string | undefined>;
     writeToFile: (path: string, data: string) => Promise<void>;
     private createPathPromp;
     private createDirecoryRecursively;

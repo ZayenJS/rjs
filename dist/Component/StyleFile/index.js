@@ -16,10 +16,12 @@ exports.StyleFile = void 0;
 const path_1 = __importDefault(require("path"));
 const FileUtil_1 = __importDefault(require("../../FileUtil"));
 const Shell_1 = __importDefault(require("../../Shell"));
-class StyleFile {
-    constructor(name, options) {
-        this.name = name;
-        this.options = options;
+const BaseFile_1 = require("../BaseFile/BaseFile");
+const ConfigFile_1 = __importDefault(require("../../ConfigFile"));
+const utils_1 = require("../../utils");
+class StyleFile extends BaseFile_1.BaseFile {
+    constructor() {
+        super(...arguments);
         this.generate = () => __awaiter(this, void 0, void 0, function* () {
             let styleFile = null;
             let styleFileName = null;
@@ -35,9 +37,24 @@ class StyleFile {
                 response = overwrite;
             }
             if (response && styleFileName) {
-                yield FileUtil_1.default.writeToFile(path_1.default.join(this.options.componentDir, this.name, `${styleFileName}.${this.options.styling}`), '@import "";');
+                yield FileUtil_1.default.writeToFile(path_1.default.join(this.options.componentDir, this.name, `${styleFileName}.${this.options.styling}`), yield this.getData());
             }
             return response;
+        });
+        this.getData = (name = this.name) => __awaiter(this, void 0, void 0, function* () {
+            const { styling, cssModules } = yield ConfigFile_1.default.getConfig();
+            const imports = styling === 'scss'
+                ? [this.addLine(0, '// @import "path_to_file";'), this.addLine(0, '')]
+                : [];
+            const className = cssModules ? 'Container' : utils_1.toKebabCase(this.name);
+            return [
+                ...imports,
+                this.addLine(0, `.${className} {`),
+                this.addLine(1, '/* your styles here... */'),
+                this.addLine(0, '}'),
+            ]
+                .filter((line) => typeof line === 'string')
+                .join('\n');
         });
     }
 }

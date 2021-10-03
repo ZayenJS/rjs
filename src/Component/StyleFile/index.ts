@@ -1,14 +1,13 @@
 import path from 'path';
 
-import { ComponentOptions } from '../../@types';
-
 import fileUtil from '../../FileUtil';
 import shell from '../../Shell';
 import logger from '../../Logger';
+import { BaseFile } from '../BaseFile/BaseFile';
+import ConfigFile from '../../ConfigFile';
+import { toKebabCase } from '../../utils';
 
-export class StyleFile {
-  constructor(private name: string, private options: ComponentOptions) {}
-
+export class StyleFile extends BaseFile {
   public generate = async () => {
     let styleFile = null;
     let styleFileName = null;
@@ -36,10 +35,30 @@ export class StyleFile {
     if (response && styleFileName) {
       await fileUtil.writeToFile(
         path.join(this.options.componentDir, this.name, `${styleFileName}.${this.options.styling}`),
-        '@import "";',
+        await this.getData(),
       );
     }
 
     return response;
+  };
+
+  protected getData = async (name: string = this.name) => {
+    const { styling, cssModules } = await ConfigFile.getConfig();
+
+    const imports =
+      styling === 'scss'
+        ? [this.addLine(0, '// @import "path_to_file";'), this.addLine(0, '')]
+        : [];
+
+    const className = cssModules ? 'Container' : toKebabCase(this.name);
+
+    return [
+      ...imports,
+      this.addLine(0, `.${className} {`),
+      this.addLine(1, '/* your styles here... */'),
+      this.addLine(0, '}'),
+    ]
+      .filter((line) => typeof line === 'string')
+      .join('\n');
   };
 }

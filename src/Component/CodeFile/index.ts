@@ -1,18 +1,15 @@
 import path from 'path';
 
-import { ComponentOptions } from '../../@types';
-
 import fileUtil from '../../FileUtil';
 import shell from '../../Shell';
 import logger from '../../Logger';
-import { hasStyles } from '../../utils';
+import { hasStyles, toKebabCase } from '../../utils';
+import { BaseFile } from '../BaseFile/BaseFile';
 
-export class CodeFile {
-  constructor(private name: string, private options: ComponentOptions) {}
-
+export class CodeFile extends BaseFile {
   public generate = async () => {
     // ? ACTIVATE THIS TO TEST OUTPUT IN SHELL
-    // logger.exit(this.getData());
+    // logger.exit(this.options);
 
     const codeFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
     let dirPath = this.options.componentDir;
@@ -36,17 +33,9 @@ export class CodeFile {
     return response;
   };
 
-  private addLine = (tabs = 0, str: string | null = null) => {
-    if (str === null) {
-      return null;
-    }
-
-    return str ? '\t'.repeat(tabs) + str : '';
-  };
-
-  private getData = (name: string = this.name) => {
+  protected getData = (name: string = this.name) => {
     return [
-      ...this.getHeaderImports(name),
+      ...this.getHeaderImports(),
       ...this.getStylingImports(name),
       ...this.getComponentBody(name),
       this.addLine(0, `export default ${name};`),
@@ -55,7 +44,7 @@ export class CodeFile {
       .join('\n');
   };
 
-  private getHeaderImports = (name: string) => {
+  private getHeaderImports = () => {
     const { componentType, importReact, typescript } = this.options;
 
     let headerImport = null;
@@ -157,7 +146,7 @@ export class CodeFile {
     let className = '';
 
     if (hasStyles(this.options)) {
-      className = ` className=${cssModules ? '{classes.Container}' : `'${name}'`}`;
+      className = ` className=${cssModules ? '{classes.Container}' : `'${toKebabCase(name)}'`}`;
     }
 
     return className;

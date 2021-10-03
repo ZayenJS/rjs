@@ -6,16 +6,15 @@ import shell from '../Shell';
 import fileUtil from '../FileUtil';
 
 import logger from '../Logger';
-import { PACKAGE_NAME } from '../constants';
+import { PACKAGE_NAME, RC_FILE_NAME } from '../constants';
 import { ConfigFileOptions } from '../@types';
 
-class ConfigFile {
-  private rootDirPath = '';
+export class ConfigFile {
   private destinationPath = '';
   private defaultOptions: ConfigFileOptions = {
     type: 'react',
     importReact: false,
-    typescript: true,
+    typescript: false,
     styling: 'css',
     cssModules: false,
     componentType: 'function',
@@ -25,19 +24,30 @@ class ConfigFile {
     packageManager: 'npm',
   };
 
+  private OVERWRITE_PROMPT = 'File already exists, do you want to overwrite it?';
+  private OVERWRITE_FAIL = 'Config file not overwritten.';
+  private SUCCESS_MESSAGE = 'Config file successfully created!';
+  private ERROR_MESSAGE =
+    "Could not find a package.json... Make sure you're in the right directory.";
+
+  constructor(private rootDirPath?: string) {}
+
   public generate = async (options: ConfigFileOptions) => {
-    const packageJsonAbsolutePath = await findUp('package.json');
+    options = await shell.parseOptions(options, true);
+    if (this.rootDirPath) {
+      this.destinationPath = `${this.rootDirPath}${RC_FILE_NAME}`;
 
-    options = await shell.parseOptions(options);
-
-    if (packageJsonAbsolutePath) {
-      this.rootDirPath = packageJsonAbsolutePath?.split('package.json')[0];
-      this.destinationPath = `${this.rootDirPath}.${PACKAGE_NAME}rc.json`;
-
-      return this.createRcTemplate(options);
+      await this.createRcTemplate(options);
+      return;
     }
 
-    logger.exit("Could not find a package.json... Make sure you're in the right directory.");
+    const packageJsonAbsolutePath = await findUp('package.json');
+    this.rootDirPath = packageJsonAbsolutePath?.split('package.json')[0];
+    this.destinationPath = `${this.rootDirPath}${RC_FILE_NAME}`;
+
+    if (!packageJsonAbsolutePath) logger.exit(this.ERROR_MESSAGE);
+
+    await this.createRcTemplate(options);
   };
 
   private createRcTemplate = async (options: ConfigFileOptions) => {
@@ -45,27 +55,31 @@ class ConfigFile {
       const fileExists = await fileUtil.fileExist(this.destinationPath);
 
       if (fileExists) {
-        const { overwrite } = await shell.alreadyExistPromp(
-          'File already exists, do you want to overwrite it?',
-        );
+        const { overwrite } = await shell.alreadyExistPromp(this.OVERWRITE_PROMPT);
 
         if (overwrite) {
           fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
 
-          return logger.log('green', 'Config file successfully created!');
+          return logger.log('green', this.SUCCESS_MESSAGE);
         }
 
-        logger.exit('Config file not overwritten.');
+        logger.exit(this.OVERWRITE_FAIL);
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'ENOENT')
         await fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
     }
+
+    fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
+
+    logger.log('green', this.SUCCESS_MESSAGE);
   };
 
   private readFile = async (filePath: string) => fs.readFile(filePath, { encoding: 'utf-8' });
 
-  public getConfig = async () => {
+  public getConfig = async (init = false) => {
+    if (init) return this.defaultOptions;
+
     let config = await this.getConfigFileContent();
 
     if (!config) config = this.defaultOptions;
@@ -85,7 +99,7 @@ class ConfigFile {
     return null;
   };
 
-  private findRcFile = async () => findUp(`.${PACKAGE_NAME}rc.json`);
+  private findRcFile = async () => findUp(RC_FILE_NAME);
 }
 
 export default new ConfigFile();

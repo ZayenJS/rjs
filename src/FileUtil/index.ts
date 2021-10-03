@@ -27,7 +27,7 @@ class FileUtil {
       if (!dirExists) {
         const { create } = await this.createPathPromp(
           directoryPath,
-          "This path doesn't exist, do you want to create it?",
+          `The path ${filePath} doesn't exist, do you want to create it?`,
         );
         if (!create) {
           logger.exit('Action canceled by user, path and file not created.');
@@ -55,7 +55,7 @@ class FileUtil {
     return packageJsonDirPath?.split('package.json')[0];
   };
 
-  private getFileAbsolutePath = async (filePath: string) => {
+  public getFileAbsolutePath = async (filePath: string) => {
     const rootDirPath = await this.checkRootDir();
     const { type } = await configFile.getConfig();
 

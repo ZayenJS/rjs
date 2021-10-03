@@ -1,25 +1,35 @@
-export interface ConfigFileOptions {
-    type: 'react' | 'next';
+export declare type Styling = 'scss' | 'css' | 'none';
+export declare type ComponentType = 'function' | 'class';
+export interface BaseOptions {
     importReact: boolean;
     typescript: boolean;
-    styling: 'scss' | 'css' | 'none';
+    styling: Styling;
     cssModules: boolean;
-    componentType: 'function' | 'class';
+    componentType: ComponentType;
     componentDir: string;
     containerDir: string;
     pageDir: string;
     packageManager: 'npm' | 'yarn';
 }
+export interface ConfigFileOptions extends BaseOptions {
+    type: 'react' | 'next';
+}
 export declare type ConfigFileKeys = keyof ConfigFileOptions;
-export interface ComponentOptions {
-    importReact: boolean;
-    componentDir: string;
-    typescript: boolean;
-    styling: 'scss' | 'css' | 'none';
-    cssModules: boolean;
-    componentType: 'function' | 'class';
+export interface ComponentOptions extends BaseOptions {
     tag: string;
 }
-export interface CreatFileRecusrsion {
-    (directoryPath: string, fileName: string): CreatFileRecusrsion;
+export interface AppOptions extends BaseOptions {
+    name: string;
+    interactive: boolean;
+    router: boolean;
+    redux: boolean;
+    axios: boolean;
+}
+export declare type AppOptionsKeys = keyof AppOptions;
+export interface ReactAppOptions extends AppOptions {
+}
+export interface NextAppOptions extends AppOptions {
+}
+export interface CreateFileRecusrsion {
+    (directoryPath: string, fileName: string): CreateFileRecusrsion;
 }
