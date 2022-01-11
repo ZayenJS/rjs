@@ -43,35 +43,49 @@ class HookFile extends BaseFile_1.BaseFile {
             .join('\n');
         this.addImports = () => {
             const { useDispatch, useEffect, useSelector, useState } = this.options;
-            let imports = `import { `;
-            const hooks = [];
+            let reactImports = `import { `;
+            let reactReduxImports = `import { `;
+            const reactHooks = [];
+            const reactReduxHooks = [];
             if (useState)
-                hooks.push('useState');
+                reactHooks.push('useState');
             if (useEffect)
-                hooks.push('useEffect');
+                reactHooks.push('useEffect');
             if (useSelector)
-                hooks.push('useSelector');
+                reactReduxHooks.push('useSelector');
             if (useDispatch)
-                hooks.push('useDispatch');
-            imports += `${hooks.join(', ')} } from 'react';`;
-            return hooks.length ? [this.addLine(0, imports)] : '';
+                reactReduxHooks.push('useDispatch');
+            reactImports += `${reactHooks.join(', ')} } from 'react';`;
+            reactReduxImports += `${reactReduxHooks.join(', ')} } from 'react-redux';`;
+            return [
+                reactHooks.length ? this.addLine(0, reactImports) : null,
+                reactReduxHooks.length ? this.addLine(0, reactReduxImports) : null,
+            ];
         };
         this.addFunctionBody = () => {
             const { useDispatch, useEffect, useSelector, useState, typescript } = this.options;
             const state = useState ? this.addLine(1, 'const [state, setState] = useState({});') : null;
+            const effect = useEffect
+                ? [
+                    this.addLine(1, 'useEffect(() => {'),
+                    this.addLine(2, ''),
+                    this.addLine(2, 'return () => {}'),
+                    this.addLine(1, '}, []);'),
+                ]
+                : [];
             const dispatch = useDispatch ? this.addLine(1, 'const dispatch = useDispatch();') : null;
-            const effect = useEffect ? this.addLine(1, 'useEffect(() => {}, []);') : null;
             const selector = useSelector
                 ? this.addLine(1, `const selector = useSelector((state) => {});${typescript ? ' // TODO: type the state parameter' : ''}`)
                 : null;
+            const hasBody = state || effect.length || dispatch || selector;
             return [
                 this.addLine(0, `export const ${this.name} = () => {`),
                 state,
                 selector,
                 dispatch,
-                this.addLine(0, ``),
-                effect,
-                this.addLine(0, ``),
+                hasBody ? this.addLine(0, ``) : null,
+                ...effect,
+                hasBody ? this.addLine(0, ``) : null,
                 this.addLine(1, 'return {}; // TODO?: return value from hook'),
                 this.addLine(0, `}`),
             ];

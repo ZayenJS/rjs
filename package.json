@@ -6,6 +6,7 @@
   "scripts": {
     "start": "./dist/index.js",
     "test": "jest",
+    "build": "tsc --pretty",
     "test:watch": "jest --watchAll",
     "build:watch": "tsc --pretty --watch"
   },
