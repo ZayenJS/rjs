@@ -19,6 +19,7 @@ class FileUtil {
 
       const folderName = fileName.split('.')[0];
       let filePath = path.join(directoryPath, fileName);
+
       filePath = (await this.getFileAbsolutePath(filePath)) ?? directoryPath;
       directoryPath = filePath?.split(fileName)[0];
 
@@ -38,7 +39,9 @@ class FileUtil {
       }
 
       const file = await fs.open(filePath, constants.O_CREAT);
+
       await file.close();
+
       return fs.readFile(filePath, { encoding: 'utf8' });
     } catch (error) {
       logger.debug(error);

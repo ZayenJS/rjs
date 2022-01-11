@@ -6,7 +6,7 @@ import shell from '../Shell';
 import fileUtil from '../FileUtil';
 
 import logger from '../Logger';
-import { PACKAGE_NAME, RC_FILE_NAME } from '../constants';
+import { RC_FILE_NAME } from '../constants';
 import { ConfigFileOptions } from '../@types';
 
 export class ConfigFile {
@@ -19,7 +19,7 @@ export class ConfigFile {
     cssModules: false,
     componentType: 'function',
     componentDir: 'src/components',
-    containerDir: 'src/containers',
+    hooksDir: 'src/hooks',
     pageDir: 'src/pages',
     packageManager: 'npm',
   };
@@ -80,9 +80,9 @@ export class ConfigFile {
   public getConfig = async (init = false) => {
     if (init) return this.defaultOptions;
 
-    let config = await this.getConfigFileContent();
+    const config = await this.getConfigFileContent();
 
-    if (!config) config = this.defaultOptions;
+    if (!config) return this.defaultOptions;
 
     return config;
   };

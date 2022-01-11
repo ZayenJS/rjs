@@ -5,6 +5,8 @@ class BaseFile {
     constructor(name, options) {
         this.name = name;
         this.options = options;
+        this._nameWithExtension = '';
+        this.getFileName = () => this._nameWithExtension;
         this.addLine = (tabs = 0, str = null) => {
             if (str === null) {
                 return null;

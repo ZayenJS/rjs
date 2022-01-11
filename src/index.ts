@@ -3,7 +3,7 @@ import { program } from 'commander';
 import app from './App';
 import configFile from './ConfigFile';
 import component from './Component';
-import container from './Container';
+import hook from './Hook';
 import page from './Page';
 import { PACKAGE_NAME } from './constants';
 
@@ -21,7 +21,7 @@ program.version('1.0.0-beta-0.1');
 */
 program
   .command('config')
-  .description('Creates a config file for ' + PACKAGE_NAME)
+  .description(`Creates a config file for ${PACKAGE_NAME}`)
   .option('-T, --type <type>', 'Specifies the framework used')
   .option(
     '--import-react',
@@ -105,7 +105,7 @@ const generate = program.command('generate').alias('g');
 // COMPONENT
 generate
   .command('component <component_name>')
-  .alias('comp')
+  .alias('c')
   .description('Generates a component with a <component_name>')
   .option('-d, --component-dir <path>', 'Will generate the component in the specified path')
   .option('-t, --typescript', 'Generates a component with typescript')
@@ -119,16 +119,21 @@ generate
     '--import-react',
     'This will influence the future component generation with the import React from "react" line',
   )
+  .option('--flat', 'This will not generate the component inside a folder')
   .option('-T, --tag <tag_name>', 'The HTML tag to use for the component')
   .action(component.generate);
 
-// CONTAINER
+// HOOK
 generate
-  .command('container <container_name>')
-  .description('Generates a container with a <container_name>')
-  .option('-t, --typescript', 'Generates a container with typescript', false)
-  .alias('cont')
-  .action(container.generate);
+  .command('hook <hook_name>')
+  .alias('h')
+  .description('Generates a custom hook with the <hook_name> in the default hooks folder')
+  .option('-t, --typescript', 'Generates a hook using typescript')
+  .option('-e, --use-effect', 'Adds a useEffect import to the generated file')
+  .option('-s, --use-state', 'Adds a useState import to the generated file')
+  .option('-S, --use-selector', 'Adds a useSelector import to the generated file')
+  .option('-D, --use-dispatch', 'Adds a useDispatch import to the generated file')
+  .action(hook.generate);
 
 // PAGE
 generate

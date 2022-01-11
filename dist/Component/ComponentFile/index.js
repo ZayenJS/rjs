@@ -12,39 +12,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CodeFile = void 0;
+exports.ComponentFile = void 0;
 const path_1 = __importDefault(require("path"));
 const FileUtil_1 = __importDefault(require("../../FileUtil"));
 const Shell_1 = __importDefault(require("../../Shell"));
 const utils_1 = require("../../utils");
 const BaseFile_1 = require("../BaseFile/BaseFile");
-class CodeFile extends BaseFile_1.BaseFile {
+class ComponentFile extends BaseFile_1.BaseFile {
     constructor() {
         super(...arguments);
         this.generate = () => __awaiter(this, void 0, void 0, function* () {
-            const codeFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
-            let dirPath = this.options.componentDir;
-            const codeFile = yield FileUtil_1.default.createFile(path_1.default.join(dirPath, this.name), codeFileName);
+            const componentFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
+            this._nameWithExtension = componentFileName;
+            const dirPath = this.options.componentDir;
+            const componentFile = yield FileUtil_1.default.createFile(path_1.default.join(dirPath, this.options.flat ? '' : this.name), componentFileName);
             let response = true;
-            if (codeFile) {
-                const { overwrite } = yield Shell_1.default.alreadyExistPromp(`The component ${codeFileName} already exists, do you want to overwrite it?`);
+            if (componentFile) {
+                const { overwrite } = yield Shell_1.default.alreadyExistPromp(`The component ${componentFileName} already exists, do you want to overwrite it?`);
                 response = overwrite;
             }
             if (response) {
-                yield FileUtil_1.default.writeToFile(path_1.default.join(dirPath, this.name, codeFileName), this.getData());
+                yield FileUtil_1.default.writeToFile(path_1.default.join(dirPath, this.options.flat ? '' : this.name, componentFileName), this.getData());
             }
             return response;
         });
-        this.getData = (name = this.name) => {
-            return [
-                ...this.getHeaderImports(),
-                ...this.getStylingImports(name),
-                ...this.getComponentBody(name),
-                this.addLine(0, `export default ${name};`),
-            ]
-                .filter((line) => typeof line === 'string')
-                .join('\n');
-        };
+        this.getData = (name = this.name) => [
+            ...this.getHeaderImports(),
+            ...this.getStylingImports(name),
+            ...this.getComponentBody(name),
+            this.addLine(0, `export default ${name};`),
+        ]
+            .filter((line) => typeof line === 'string')
+            .join('\n');
         this.getHeaderImports = () => {
             const { componentType, importReact, typescript } = this.options;
             let headerImport = null;
@@ -90,7 +89,7 @@ class CodeFile extends BaseFile_1.BaseFile {
         };
         this.getClassComponent = (name) => {
             const { typescript, tag } = this.options;
-            let className = this.getClassName(name);
+            const className = this.getClassName(name);
             return [
                 this.addLine(0, `class ${name} extends Component${typescript ? `<${name}Props, ${name}State>` : ''} {`),
                 this.addLine(1, 'state = {};'),
@@ -104,7 +103,7 @@ class CodeFile extends BaseFile_1.BaseFile {
         };
         this.getFunctionComponent = (name) => {
             const { typescript, tag } = this.options;
-            let className = this.getClassName(name);
+            const className = this.getClassName(name);
             return [
                 this.addLine(0, `const ${name}${typescript ? `: FC<${name}Props>` : ''} = () => {`),
                 this.addLine(1, 'return ('),
@@ -116,13 +115,12 @@ class CodeFile extends BaseFile_1.BaseFile {
         };
         this.getClassName = (name) => {
             const { cssModules } = this.options;
-            let className = '';
             if ((0, utils_1.hasStyles)(this.options)) {
-                className = ` className=${cssModules ? '{classes.Container}' : `'${(0, utils_1.toKebabCase)(name)}'`}`;
+                return ` className=${cssModules ? '{classes.Container}' : `'${(0, utils_1.toKebabCase)(name)}'`}`;
             }
-            return className;
+            return '';
         };
     }
 }
-exports.CodeFile = CodeFile;
+exports.ComponentFile = ComponentFile;
 //# sourceMappingURL=index.js.map

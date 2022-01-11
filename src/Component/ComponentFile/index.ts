@@ -5,36 +5,44 @@ import shell from '../../Shell';
 import logger from '../../Logger';
 import { hasStyles, toKebabCase } from '../../utils';
 import { BaseFile } from '../BaseFile/BaseFile';
+import { ComponentOptions } from '../../@types';
 
-export class CodeFile extends BaseFile {
+export class ComponentFile extends BaseFile<ComponentOptions> {
   public generate = async () => {
     // ? ACTIVATE THIS TO TEST OUTPUT IN SHELL
     // logger.exit(this.options);
 
-    const codeFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
-    let dirPath = this.options.componentDir;
+    const componentFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
+    this._nameWithExtension = componentFileName;
+    const dirPath = this.options.componentDir;
 
-    const codeFile = await fileUtil.createFile(path.join(dirPath, this.name), codeFileName);
+    const componentFile = await fileUtil.createFile(
+      path.join(dirPath, this.options.flat ? '' : this.name),
+      componentFileName,
+    );
 
     let response = true;
 
-    if (codeFile) {
+    if (componentFile) {
       const { overwrite } = await shell.alreadyExistPromp(
-        `The component ${codeFileName} already exists, do you want to overwrite it?`,
+        `The component ${componentFileName} already exists, do you want to overwrite it?`,
       );
 
       response = overwrite;
     }
 
     if (response) {
-      await fileUtil.writeToFile(path.join(dirPath, this.name, codeFileName), this.getData());
+      await fileUtil.writeToFile(
+        path.join(dirPath, this.options.flat ? '' : this.name, componentFileName),
+        this.getData(),
+      );
     }
 
     return response;
   };
 
-  protected getData = (name: string = this.name) => {
-    return [
+  protected getData = (name: string = this.name) =>
+    [
       ...this.getHeaderImports(),
       ...this.getStylingImports(name),
       ...this.getComponentBody(name),
@@ -42,7 +50,6 @@ export class CodeFile extends BaseFile {
     ]
       .filter((line) => typeof line === 'string')
       .join('\n');
-  };
 
   private getHeaderImports = () => {
     const { componentType, importReact, typescript } = this.options;
@@ -108,7 +115,7 @@ export class CodeFile extends BaseFile {
   private getClassComponent = (name: string) => {
     const { typescript, tag } = this.options;
 
-    let className = this.getClassName(name);
+    const className = this.getClassName(name);
 
     return [
       this.addLine(
@@ -128,7 +135,7 @@ export class CodeFile extends BaseFile {
   private getFunctionComponent = (name: string) => {
     const { typescript, tag } = this.options;
 
-    let className = this.getClassName(name);
+    const className = this.getClassName(name);
 
     return [
       this.addLine(0, `const ${name}${typescript ? `: FC<${name}Props>` : ''} = () => {`),
@@ -143,12 +150,10 @@ export class CodeFile extends BaseFile {
   private getClassName = (name: string) => {
     const { cssModules } = this.options;
 
-    let className = '';
-
     if (hasStyles(this.options)) {
-      className = ` className=${cssModules ? '{classes.Container}' : `'${toKebabCase(name)}'`}`;
+      return ` className=${cssModules ? '{classes.Container}' : `'${toKebabCase(name)}'`}`;
     }
 
-    return className;
+    return '';
   };
 }

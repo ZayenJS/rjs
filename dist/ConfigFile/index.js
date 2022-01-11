@@ -31,7 +31,7 @@ class ConfigFile {
             cssModules: false,
             componentType: 'function',
             componentDir: 'src/components',
-            containerDir: 'src/containers',
+            hooksDir: 'src/hooks',
             pageDir: 'src/pages',
             packageManager: 'npm',
         };
@@ -46,7 +46,7 @@ class ConfigFile {
                 yield this.createRcTemplate(options);
                 return;
             }
-            const packageJsonAbsolutePath = yield find_up_1.default('package.json');
+            const packageJsonAbsolutePath = yield (0, find_up_1.default)('package.json');
             this.rootDirPath = packageJsonAbsolutePath === null || packageJsonAbsolutePath === void 0 ? void 0 : packageJsonAbsolutePath.split('package.json')[0];
             this.destinationPath = `${this.rootDirPath}${constants_1.RC_FILE_NAME}`;
             if (!packageJsonAbsolutePath)
@@ -76,9 +76,9 @@ class ConfigFile {
         this.getConfig = (init = false) => __awaiter(this, void 0, void 0, function* () {
             if (init)
                 return this.defaultOptions;
-            let config = yield this.getConfigFileContent();
+            const config = yield this.getConfigFileContent();
             if (!config)
-                config = this.defaultOptions;
+                return this.defaultOptions;
             return config;
         });
         this.getConfigFileContent = () => __awaiter(this, void 0, void 0, function* () {
@@ -90,7 +90,7 @@ class ConfigFile {
             }
             return null;
         });
-        this.findRcFile = () => __awaiter(this, void 0, void 0, function* () { return find_up_1.default(constants_1.RC_FILE_NAME); });
+        this.findRcFile = () => __awaiter(this, void 0, void 0, function* () { return (0, find_up_1.default)(constants_1.RC_FILE_NAME); });
     }
 }
 exports.ConfigFile = ConfigFile;

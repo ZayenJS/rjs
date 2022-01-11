@@ -25,14 +25,14 @@ class Shell {
             for (const key in options) {
                 baseOptions[key] = options[key];
             }
-            if (dirPath && dirPath.startsWith('/')) {
+            if (dirPath === null || dirPath === void 0 ? void 0 : dirPath.startsWith('/')) {
                 Logger_1.default.exit('Absolute paths are not supported, please use a relative one.');
             }
             else if (init && dirPath && !dirPath.includes('src') && baseOptions.type === 'react') {
                 baseOptions.componentDir = `src/${dirPath}`;
             }
             if (!init && dirPath) {
-                if (dirPath && dirPath.startsWith('./')) {
+                if (dirPath === null || dirPath === void 0 ? void 0 : dirPath.startsWith('./')) {
                     const cleanedDirPath = dirPath.split('./')[1];
                     dirPath = path_1.default.join(process.cwd(), cleanedDirPath);
                 }
@@ -41,29 +41,18 @@ class Shell {
                 }
                 baseOptions.componentDir = dirPath;
             }
-            return {
-                type: baseOptions.type,
-                importReact: baseOptions.importReact,
-                typescript: baseOptions.typescript,
-                styling: baseOptions.styling,
-                cssModules: baseOptions.cssModules,
-                componentType: baseOptions.componentType,
-                componentDir: baseOptions.componentDir,
-                containerDir: baseOptions.containerDir,
-                pageDir: baseOptions.pageDir,
-                packageManager: baseOptions.packageManager,
-            };
+            return baseOptions;
         });
         this.alreadyExistPromp = (message) => __awaiter(this, void 0, void 0, function* () {
-            return enquirer_1.prompt({
+            return (0, enquirer_1.prompt)({
                 type: 'toggle',
                 name: 'overwrite',
-                message: chalk_1.default `{yellow ${message}}`,
+                message: (0, chalk_1.default) `{yellow ${message}}`,
                 required: true,
             });
         });
         this.togglePrompt = (name, message) => __awaiter(this, void 0, void 0, function* () {
-            return enquirer_1.prompt({
+            return (0, enquirer_1.prompt)({
                 type: 'toggle',
                 name,
                 message,

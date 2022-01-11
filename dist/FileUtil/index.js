@@ -49,7 +49,7 @@ class FileUtil {
                 let filePath = path_1.default.join(directoryPath, fileName);
                 filePath = (_a = (yield this.getFileAbsolutePath(filePath))) !== null && _a !== void 0 ? _a : directoryPath;
                 directoryPath = filePath === null || filePath === void 0 ? void 0 : filePath.split(fileName)[0];
-                const dirExists = yield find_up_1.exists(path_1.default.join(directoryPath));
+                const dirExists = yield (0, find_up_1.exists)(path_1.default.join(directoryPath));
                 if (!dirExists) {
                     const { create } = yield this.createPathPromp(directoryPath, `The path ${filePath} doesn't exist, do you want to create it?`);
                     if (!create) {
@@ -68,7 +68,7 @@ class FileUtil {
             }
         });
         this.checkRootDir = () => __awaiter(this, void 0, void 0, function* () {
-            const packageJsonDirPath = yield find_up_1.default('package.json');
+            const packageJsonDirPath = yield (0, find_up_1.default)('package.json');
             if (!packageJsonDirPath)
                 Logger_1.default.exit('Package.json not found... Make sure you are in the right directory.');
             return packageJsonDirPath === null || packageJsonDirPath === void 0 ? void 0 : packageJsonDirPath.split('package.json')[0];
@@ -95,10 +95,10 @@ class FileUtil {
             }
         });
         this.createPathPromp = (path, message) => __awaiter(this, void 0, void 0, function* () {
-            return enquirer_1.prompt({
+            return (0, enquirer_1.prompt)({
                 type: 'toggle',
                 name: 'create',
-                message: chalk_1.default `{yellow ${message}}`,
+                message: (0, chalk_1.default) `{yellow ${message}}`,
                 required: true,
             });
         });

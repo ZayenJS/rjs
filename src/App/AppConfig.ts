@@ -13,7 +13,7 @@ export abstract class AppConfig {
     cssModules: false,
     componentType: 'function',
     componentDir: 'src/components',
-    containerDir: 'src/containers',
+    hooksDir: 'src/hooks',
     pageDir: 'src/pages',
     packageManager: 'npm',
   };

@@ -1,7 +1,9 @@
-import { ComponentOptions } from '../../@types';
+export abstract class BaseFile<T> {
+  protected _nameWithExtension = '';
 
-export abstract class BaseFile {
-  constructor(protected name: string, protected options: ComponentOptions) {}
+  public getFileName = () => this._nameWithExtension;
+
+  constructor(protected name: string, protected options: T) {}
 
   protected addLine = (tabs = 0, str: string | null = null) => {
     if (str === null) {
@@ -12,4 +14,6 @@ export abstract class BaseFile {
   };
 
   protected abstract getData: (name: string) => void;
+
+  public abstract generate: () => Promise<boolean>;
 }

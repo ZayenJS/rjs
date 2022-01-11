@@ -7,9 +7,9 @@ export interface BaseOptions {
     cssModules: boolean;
     componentType: ComponentType;
     componentDir: string;
-    containerDir: string;
-    pageDir: string;
-    packageManager: 'npm' | 'yarn';
+    hooksDir: string;
+    pageDir?: string;
+    packageManager?: 'npm' | 'yarn';
 }
 export interface ConfigFileOptions extends BaseOptions {
     type: 'react' | 'next';
@@ -17,6 +17,7 @@ export interface ConfigFileOptions extends BaseOptions {
 export declare type ConfigFileKeys = keyof ConfigFileOptions;
 export interface ComponentOptions extends BaseOptions {
     tag: string;
+    flat: boolean;
 }
 export interface AppOptions extends BaseOptions {
     name: string;
@@ -29,6 +30,14 @@ export declare type AppOptionsKeys = keyof AppOptions;
 export interface ReactAppOptions extends AppOptions {
 }
 export interface NextAppOptions extends AppOptions {
+}
+export interface HookOptions {
+    hooksDir: string;
+    typescript: boolean;
+    useEffect: boolean;
+    useSelector: boolean;
+    useState: boolean;
+    useDispatch: boolean;
 }
 export interface CreateFileRecusrsion {
     (directoryPath: string, fileName: string): CreateFileRecusrsion;

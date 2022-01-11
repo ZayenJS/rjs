@@ -27,7 +27,7 @@ class App extends AppConfig_1.AppConfig {
         super(...arguments);
         this.gatherOptionsInteractively = (type) => __awaiter(this, void 0, void 0, function* () {
             if (!this.options.name) {
-                const { name } = yield enquirer_1.prompt({
+                const { name } = yield (0, enquirer_1.prompt)({
                     type: 'input',
                     name: 'name',
                     message: 'What is the name of the app?',
@@ -39,14 +39,14 @@ class App extends AppConfig_1.AppConfig {
                 this.options.importReact = importReact;
             }
             const { typescript } = yield Shell_1.default.togglePrompt('typescript', 'Do you want to use typescript?');
-            const { styling } = yield enquirer_1.prompt({
+            const { styling } = yield (0, enquirer_1.prompt)({
                 type: 'select',
                 name: 'styling',
                 message: 'Which styling option do you want? (pick one)',
                 choices: ['css', 'scss', 'none'],
             });
             if (styling !== 'none') {
-                const { cssModules } = yield enquirer_1.prompt({
+                const { cssModules } = yield (0, enquirer_1.prompt)({
                     type: 'toggle',
                     name: 'cssModules',
                     message: 'Do you want to use css modules?',
@@ -54,36 +54,36 @@ class App extends AppConfig_1.AppConfig {
                 });
                 this.options.cssModules = cssModules;
             }
-            const { componentType } = yield enquirer_1.prompt({
+            const { componentType } = yield (0, enquirer_1.prompt)({
                 type: 'select',
                 name: 'componentType',
                 message: 'What type of components fo you use?',
                 choices: ['function', 'class'],
             });
-            const { componentDir } = yield enquirer_1.prompt({
+            const { componentDir } = yield (0, enquirer_1.prompt)({
                 type: 'input',
                 name: 'componentDir',
                 message: 'Where do you want your components to be generated? (please use a relative path. e.g: src/components)',
             });
-            const { router } = yield enquirer_1.prompt({
+            const { router } = yield (0, enquirer_1.prompt)({
                 type: 'toggle',
                 name: 'router',
                 message: 'Do you plan on using a router?',
                 required: true,
             });
-            const { redux } = yield enquirer_1.prompt({
+            const { redux } = yield (0, enquirer_1.prompt)({
                 type: 'toggle',
                 name: 'redux',
                 message: 'Do you want redux as your state management option?',
                 required: true,
             });
-            const { axios } = yield enquirer_1.prompt({
+            const { axios } = yield (0, enquirer_1.prompt)({
                 type: 'toggle',
                 name: 'axios',
                 message: 'Do you need axios?',
                 required: true,
             });
-            const { packageManager } = yield enquirer_1.prompt({
+            const { packageManager } = yield (0, enquirer_1.prompt)({
                 type: 'select',
                 name: 'componentType',
                 message: 'What package manager do you want to use?',
@@ -117,7 +117,7 @@ class App extends AppConfig_1.AppConfig {
                 this.gatherOptionsInteractively('next');
             }
             shelljs_1.default.exec(`npx create-react-app ${name}`);
-            const confFile = new ConfigFile_1.ConfigFile(name + '/');
+            const confFile = new ConfigFile_1.ConfigFile(`${name}/`);
             yield confFile.generate(Object.assign(Object.assign({}, options), { type: 'next', pageDir: 'pages' }));
             const nextApp = new NextApp_1.NextApp(name, this.options);
             yield nextApp.generate();
@@ -135,7 +135,7 @@ class App extends AppConfig_1.AppConfig {
             try {
                 Logger_1.default.log('yellow', 'Creating git commit...');
                 shelljs_1.default.cd(this.options.name);
-                yield utils_1.sleep(2000);
+                yield (0, utils_1.sleep)(2000);
                 shelljs_1.default.exec('git add .');
                 shelljs_1.default.exec('git commit --amend -qm "initial commit made by r8y!"');
                 Logger_1.default.log('green', 'Done !');

@@ -6,8 +6,9 @@ import logger from '../../Logger';
 import { BaseFile } from '../BaseFile/BaseFile';
 import ConfigFile from '../../ConfigFile';
 import { toKebabCase } from '../../utils';
+import { ComponentOptions } from '../../@types';
 
-export class StyleFile extends BaseFile {
+export class StyleFile extends BaseFile<ComponentOptions> {
   public generate = async () => {
     let styleFile = null;
     let styleFileName = null;
@@ -17,9 +18,11 @@ export class StyleFile extends BaseFile {
       if (this.options.cssModules) styleFileName += '.module';
 
       styleFile = await fileUtil.createFile(
-        path.join(this.options.componentDir, this.name),
+        path.join(this.options.componentDir, this.options.flat ? '' : this.name),
         `${styleFileName}.${this.options.styling}`,
       );
+
+      this._nameWithExtension = `${styleFileName}.${this.options.styling}`;
     }
 
     let response = true;
@@ -34,7 +37,11 @@ export class StyleFile extends BaseFile {
 
     if (response && styleFileName) {
       await fileUtil.writeToFile(
-        path.join(this.options.componentDir, this.name, `${styleFileName}.${this.options.styling}`),
+        path.join(
+          this.options.componentDir,
+          this.options.flat ? '' : this.name,
+          `${styleFileName}.${this.options.styling}`,
+        ),
         await this.getData(),
       );
     }
@@ -43,14 +50,14 @@ export class StyleFile extends BaseFile {
   };
 
   protected getData = async (name: string = this.name) => {
-    const { styling, cssModules } = await ConfigFile.getConfig();
+    const { styling, cssModules } = this.options;
 
     const imports =
       styling === 'scss'
         ? [this.addLine(0, '// @import "path_to_file";'), this.addLine(0, '')]
         : [];
 
-    const className = cssModules ? 'Container' : toKebabCase(this.name);
+    const className = cssModules ? 'Container' : toKebabCase(name);
 
     return [
       ...imports,

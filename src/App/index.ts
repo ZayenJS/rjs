@@ -127,7 +127,7 @@ export class App extends AppConfig {
     }
 
     shell.exec(`npx create-react-app ${name}`);
-    const confFile = new ConfigFile(name + '/');
+    const confFile = new ConfigFile(`${name}/`);
     await confFile.generate({ ...options, type: 'next', pageDir: 'pages' });
     const nextApp = new NextApp(name, this.options);
     await nextApp.generate();

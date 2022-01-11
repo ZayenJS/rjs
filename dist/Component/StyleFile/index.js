@@ -17,7 +17,6 @@ const path_1 = __importDefault(require("path"));
 const FileUtil_1 = __importDefault(require("../../FileUtil"));
 const Shell_1 = __importDefault(require("../../Shell"));
 const BaseFile_1 = require("../BaseFile/BaseFile");
-const ConfigFile_1 = __importDefault(require("../../ConfigFile"));
 const utils_1 = require("../../utils");
 class StyleFile extends BaseFile_1.BaseFile {
     constructor() {
@@ -29,7 +28,8 @@ class StyleFile extends BaseFile_1.BaseFile {
                 styleFileName = `${this.name}`;
                 if (this.options.cssModules)
                     styleFileName += '.module';
-                styleFile = yield FileUtil_1.default.createFile(path_1.default.join(this.options.componentDir, this.name), `${styleFileName}.${this.options.styling}`);
+                styleFile = yield FileUtil_1.default.createFile(path_1.default.join(this.options.componentDir, this.options.flat ? '' : this.name), `${styleFileName}.${this.options.styling}`);
+                this._nameWithExtension = `${styleFileName}.${this.options.styling}`;
             }
             let response = true;
             if (styleFile && styleFileName) {
@@ -37,16 +37,16 @@ class StyleFile extends BaseFile_1.BaseFile {
                 response = overwrite;
             }
             if (response && styleFileName) {
-                yield FileUtil_1.default.writeToFile(path_1.default.join(this.options.componentDir, this.name, `${styleFileName}.${this.options.styling}`), yield this.getData());
+                yield FileUtil_1.default.writeToFile(path_1.default.join(this.options.componentDir, this.options.flat ? '' : this.name, `${styleFileName}.${this.options.styling}`), yield this.getData());
             }
             return response;
         });
         this.getData = (name = this.name) => __awaiter(this, void 0, void 0, function* () {
-            const { styling, cssModules } = yield ConfigFile_1.default.getConfig();
+            const { styling, cssModules } = this.options;
             const imports = styling === 'scss'
                 ? [this.addLine(0, '// @import "path_to_file";'), this.addLine(0, '')]
                 : [];
-            const className = cssModules ? 'Container' : utils_1.toKebabCase(this.name);
+            const className = cssModules ? 'Container' : (0, utils_1.toKebabCase)(name);
             return [
                 ...imports,
                 this.addLine(0, `.${className} {`),
