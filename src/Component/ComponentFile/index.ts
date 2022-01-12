@@ -112,6 +112,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     if (props) await this.addProps();
   };
 
+  // TODO: refactor method to use less code (avoid repetition)
   private addProps = async () => {
     while (true) {
       const { propName }: { propName: string } = await prompt({
