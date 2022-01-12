@@ -34,15 +34,14 @@ class Component {
         this.getName = () => this.name;
         this.getDefaultOptions = () => this.options;
         this.generate = (componentName, options) => __awaiter(this, void 0, void 0, function* () {
-            var _a;
             options = yield Shell_1.default.parseOptions(options);
-            options = Object.assign(Object.assign({}, options), { tag: (_a = options.tag) !== null && _a !== void 0 ? _a : 'div' });
             const componentFile = new ComponentFile_1.ComponentFile(componentName, options);
             const generatedComponentFile = yield componentFile.generate();
             if (generatedComponentFile)
                 Logger_1.default.italic('green', `Component file created successfully! (${componentFile.getFileName()})`);
             if ((0, utils_1.hasStyles)(options)) {
-                const styleFile = new StyleFile_1.StyleFile(componentName, options);
+                options = componentFile.getOptions();
+                const styleFile = new StyleFile_1.StyleFile(componentName !== null && componentName !== void 0 ? componentName : componentFile.getName(), options);
                 const generatedStyleFile = yield styleFile.generate();
                 if (generatedStyleFile)
                     Logger_1.default.italic('green', `Style file created successfully! (${styleFile.getFileName()})`);

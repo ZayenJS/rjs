@@ -54,9 +54,9 @@ newCommand
     .action(App_1.default.createNextApp);
 const generate = commander_1.program.command('generate').alias('g');
 generate
-    .command('component <component_name>')
+    .command('component [component_name]')
     .alias('c')
-    .description('Generates a component with a <component_name>')
+    .description('Generates a component, if no name is used, this will trigger the interactive mode')
     .option('-d, --component-dir <path>', 'Will generate the component in the specified path')
     .option('-t, --typescript', 'Generates a component with typescript')
     .option('-c, --component-type <type>', 'Generate a funcion or class component')

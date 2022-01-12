@@ -26,8 +26,6 @@ class Component {
   public generate = async (componentName: string, options: ComponentOptions) => {
     options = await shell.parseOptions(options);
 
-    options = { ...options, tag: options.tag ?? 'div' };
-
     const componentFile = new ComponentFile(componentName, options);
     const generatedComponentFile = await componentFile.generate();
 
@@ -39,7 +37,8 @@ class Component {
 
     // only creates a style file if styling is css or scss
     if (hasStyles(options)) {
-      const styleFile = new StyleFile(componentName, options);
+      options = componentFile.getOptions();
+      const styleFile = new StyleFile(componentName ?? componentFile.getName(), options);
       const generatedStyleFile = await styleFile.generate();
       if (generatedStyleFile)
         logger.italic('green', `Style file created successfully! (${styleFile.getFileName()})`);

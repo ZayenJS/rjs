@@ -22,6 +22,7 @@ const NextApp_1 = require("./NextApp");
 const AppConfig_1 = require("./AppConfig");
 const utils_1 = require("../utils");
 const Shell_1 = __importDefault(require("../Shell"));
+const constants_1 = require("../constants");
 class App extends AppConfig_1.AppConfig {
     constructor() {
         super(...arguments);
@@ -31,6 +32,7 @@ class App extends AppConfig_1.AppConfig {
                     type: 'input',
                     name: 'name',
                     message: 'What is the name of the app?',
+                    format: (value) => value.split(/\s/gim).join('-'),
                 });
                 this.options.name = name;
             }
@@ -57,12 +59,13 @@ class App extends AppConfig_1.AppConfig {
             const { componentType } = yield (0, enquirer_1.prompt)({
                 type: 'select',
                 name: 'componentType',
-                message: 'What type of components fo you use?',
+                message: 'What type of components do you use?',
                 choices: ['function', 'class'],
             });
             const { componentDir } = yield (0, enquirer_1.prompt)({
                 type: 'input',
                 name: 'componentDir',
+                initial: 'src/components',
                 message: 'Where do you want your components to be generated? (please use a relative path. e.g: src/components)',
             });
             const { router } = yield (0, enquirer_1.prompt)({
@@ -91,26 +94,30 @@ class App extends AppConfig_1.AppConfig {
             });
             this.options = Object.assign(Object.assign({}, this.options), { typescript,
                 styling,
-                componentType,
-                componentDir,
-                router,
+                componentType, componentDir: componentDir !== null && componentDir !== void 0 ? componentDir : 'src/components', router,
                 redux,
                 axios,
                 packageManager });
         });
         this.createReactApp = (name, options) => __awaiter(this, void 0, void 0, function* () {
-            if (!name || options.interactive) {
-                yield this.gatherOptionsInteractively('react');
+            try {
+                if (!name || options.interactive) {
+                    yield this.gatherOptionsInteractively('react');
+                }
+                else {
+                    this.options.name = name;
+                    this.options = this.parseAppOptions(options);
+                }
+                const reactApp = new ReactApp_1.ReactApp(this.options);
+                yield reactApp.generate();
+                const confFile = new ConfigFile_1.ConfigFile(`${this.options.name}/`);
+                yield confFile.generate(Object.assign(Object.assign({}, this.options), { type: 'react' }));
+                yield this.commit();
             }
-            else {
-                this.options.name = name;
-                this.options = this.parseAppOptions(options);
+            catch (error) {
+                if (error.message)
+                    Logger_1.default.error(error);
             }
-            const reactApp = new ReactApp_1.ReactApp(this.options);
-            yield reactApp.generate();
-            const confFile = new ConfigFile_1.ConfigFile(`${this.options.name}/`);
-            yield confFile.generate(Object.assign(Object.assign({}, this.options), { type: 'react' }));
-            yield this.commit();
         });
         this.createNextApp = (name, options) => __awaiter(this, void 0, void 0, function* () {
             if (!name) {
@@ -137,7 +144,7 @@ class App extends AppConfig_1.AppConfig {
                 shelljs_1.default.cd(this.options.name);
                 yield (0, utils_1.sleep)(2000);
                 shelljs_1.default.exec('git add .');
-                shelljs_1.default.exec('git commit --amend -qm "initial commit made by r8y!"');
+                shelljs_1.default.exec(`git commit --amend -m "initial commit made by ${constants_1.PACKAGE_NAME}!"`);
                 Logger_1.default.log('green', 'Done !');
             }
             catch (e) {

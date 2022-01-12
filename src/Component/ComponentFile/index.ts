@@ -5,12 +5,178 @@ import shell from '../../Shell';
 import logger from '../../Logger';
 import { hasStyles, toKebabCase } from '../../utils';
 import { BaseFile } from '../BaseFile/BaseFile';
-import { ComponentOptions } from '../../@types';
+import { ComponentOptions, ComponentType, Styling } from '../../@types';
+import { prompt } from 'enquirer';
 
 export class ComponentFile extends BaseFile<ComponentOptions> {
+  private props: { [key: string]: string | null } = {};
+
+  public getName = () => this.name;
+  public getOptions = () => this.options;
+
+  private gatherOptionsInteractively = async () => {
+    const { name }: { name: string } = await prompt({
+      type: 'input',
+      name: 'name',
+      message: "What is the component's name?",
+      format: (value) =>
+        value
+          ? value
+              .split(/\W/gim)
+              .map((word) => (word ? word[0].toUpperCase() + word.slice(1) : ''))
+              .join('')
+          : '',
+
+      result: (value) =>
+        value
+          .split(/\W/gim)
+          .map((word) => (word ? word[0].toUpperCase() + word.slice(1) : ''))
+          .join(''),
+      required: true,
+    });
+
+    const { importReact } = await shell.togglePrompt(
+      'importReact',
+      'Do you want to import React from react ?',
+    );
+
+    this.options.importReact = importReact;
+
+    const { typescript } = await shell.togglePrompt('typescript', 'Do you want to use typescript?');
+
+    const { styling }: { styling: Styling } = await prompt({
+      type: 'select',
+      name: 'styling',
+      message: 'Which styling option do you want? (pick one)',
+      choices: ['css', 'scss', 'none'],
+    });
+
+    if (styling !== 'none') {
+      const { cssModules }: { cssModules: boolean } = await prompt({
+        type: 'toggle',
+        name: 'cssModules',
+        message: 'Do you want to use css modules?',
+        required: true,
+      });
+
+      this.options.cssModules = cssModules;
+    }
+
+    const { componentType }: { componentType: ComponentType } = await prompt({
+      type: 'select',
+      name: 'componentType',
+      message: 'What type of components do you use?',
+      choices: ['function', 'class'],
+    });
+
+    const { componentDir }: { componentDir: string } = await prompt({
+      type: 'input',
+      name: 'componentDir',
+      initial: 'src/components',
+      format: (value) => `./${value}`,
+      result: (value) => path.join(process.cwd(), value),
+      message: "Component's folder path? (will be appended to the current path)",
+    });
+
+    const { tag }: { tag: string } = await prompt({
+      type: 'input',
+      name: 'tag',
+      initial: 'div',
+      message: 'What tag do you want to use?',
+    });
+
+    const { flat }: { flat: boolean } = await prompt({
+      type: 'toggle',
+      name: 'flat',
+      message: 'Do you want to generate the files inside a folder?',
+    });
+
+    this.name = name;
+    this.options = {
+      ...this.options,
+      componentDir,
+      componentType,
+      importReact,
+      styling,
+      typescript,
+      tag,
+      flat: !flat,
+    };
+
+    const { props }: { props: boolean } = await prompt({
+      type: 'toggle',
+      name: 'props',
+      message: 'Do you want to add props?',
+    });
+
+    if (props) await this.addProps();
+  };
+
+  private addProps = async () => {
+    while (true) {
+      const { propName }: { propName: string } = await prompt({
+        type: 'input',
+        name: 'propName',
+        message: 'Enter the prop name (press enter if you are done): ',
+      });
+
+      if (!propName) break;
+
+      let propType = null;
+
+      if (this.options.typescript) {
+        const response: { propType: string } = await prompt({
+          type: 'input',
+          name: 'propType',
+          message: 'Enter the prop type (? to see all available types): ',
+          required: true,
+        });
+
+        propType = response.propType;
+
+        while (propType === '?') {
+          this.displayPropTypes();
+          const response: { propType: string } = await prompt({
+            type: 'input',
+            name: 'propType',
+            message: 'Enter the prop type (? to see all available types): ',
+            required: true,
+          });
+
+          propType = response.propType;
+        }
+      }
+
+      if (propType === 'function') propType = '() => void';
+      else if (propType?.toLowerCase() === 'array') {
+        const response: { arrayType: string } = await prompt({
+          type: 'input',
+          name: 'arrayType',
+          message: 'Enter the array type (? to see all available types): ',
+          required: true,
+        });
+
+        propType = `${response.arrayType}[]`;
+      }
+
+      this.props[propName] = propType;
+    }
+  };
+
+  private displayPropTypes = () => {
+    logger.log('yellow', '\tAVAILABLE TYPES');
+    logger.log('yellow', '___________________________________');
+    logger.log('white', 'string');
+    logger.log('white', 'number');
+    logger.log('white', 'boolean');
+    logger.log('white', 'array');
+    logger.log('white', 'function');
+  };
+
   public generate = async () => {
     // ? ACTIVATE THIS TO TEST OUTPUT IN SHELL
     // logger.exit(this.options);
+    if (!this.name) await this.gatherOptionsInteractively();
 
     const componentFileName = `${this.name}.${this.options.typescript ? 'tsx' : 'js'}`;
     this._nameWithExtension = componentFileName;
@@ -97,11 +263,28 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
   private getComponentBody = (name: string) => {
     const { componentType, importReact, typescript } = this.options;
 
+    // sets the default tag to a div
+    this.options.tag = this.options.tag ?? 'div';
+
     const component =
       componentType === 'function' ? this.getFunctionComponent(name) : this.getClassComponent(name);
 
-    return [
+    let typescriptInterface = [
       this.addLine(0, typescript ? `export interface ${name}Props {}` : null),
+    ];
+
+    if (Object.keys(this.props).length && typescript) {
+      typescriptInterface = [this.addLine(0, `export interface ${name}Props {`)];
+
+      for (const entry of Object.entries(this.props)) {
+        typescriptInterface.push(this.addLine(1, `${entry[0]}: ${entry[1]};`));
+      }
+
+      typescriptInterface.push(this.addLine(0, '}'));
+    }
+
+    return [
+      ...typescriptInterface,
       this.addLine(0, importReact || typescript ? '' : null),
       this.addLine(
         0,
@@ -138,7 +321,12 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     const className = this.getClassName(name);
 
     return [
-      this.addLine(0, `const ${name}${typescript ? `: FC<${name}Props>` : ''} = () => {`),
+      this.addLine(
+        0,
+        `const ${name}${typescript ? `: FC<${name}Props>` : ''} = (${
+          Object.keys(this.props).length ? `{${Object.keys(this.props).join(', ')}}` : ''
+        }) => {`,
+      ),
       this.addLine(1, 'return ('),
       this.addLine(2, `<${tag}${className}>${name} Component</${tag}>`),
       this.addLine(1, ');'),

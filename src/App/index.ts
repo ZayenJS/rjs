@@ -9,6 +9,7 @@ import { AppOptions, ComponentType, Styling } from '../@types';
 import { AppConfig } from './AppConfig';
 import { sleep } from '../utils';
 import sh from '../Shell';
+import { PACKAGE_NAME } from '../constants';
 
 export class App extends AppConfig {
   private gatherOptionsInteractively = async (type: 'react' | 'next') => {
@@ -17,6 +18,7 @@ export class App extends AppConfig {
         type: 'input',
         name: 'name',
         message: 'What is the name of the app?',
+        format: (value) => value.split(/\s/gim).join('-'),
       });
 
       this.options.name = name;
@@ -54,13 +56,14 @@ export class App extends AppConfig {
     const { componentType }: { componentType: ComponentType } = await prompt({
       type: 'select',
       name: 'componentType',
-      message: 'What type of components fo you use?',
+      message: 'What type of components do you use?',
       choices: ['function', 'class'],
     });
 
     const { componentDir }: { componentDir: string } = await prompt({
       type: 'input',
       name: 'componentDir',
+      initial: 'src/components',
       message:
         'Where do you want your components to be generated? (please use a relative path. e.g: src/components)',
     });
@@ -98,7 +101,7 @@ export class App extends AppConfig {
       typescript,
       styling,
       componentType,
-      componentDir,
+      componentDir: componentDir ?? 'src/components',
       router,
       redux,
       axios,
@@ -107,18 +110,22 @@ export class App extends AppConfig {
   };
 
   public createReactApp = async (name: string, options: AppOptions) => {
-    if (!name || options.interactive) {
-      await this.gatherOptionsInteractively('react');
-    } else {
-      this.options.name = name;
-      this.options = this.parseAppOptions(options);
-    }
+    try {
+      if (!name || options.interactive) {
+        await this.gatherOptionsInteractively('react');
+      } else {
+        this.options.name = name;
+        this.options = this.parseAppOptions(options);
+      }
 
-    const reactApp = new ReactApp(this.options);
-    await reactApp.generate();
-    const confFile = new ConfigFile(`${this.options.name}/`);
-    await confFile.generate({ ...this.options, type: 'react' });
-    await this.commit();
+      const reactApp = new ReactApp(this.options);
+      await reactApp.generate();
+      const confFile = new ConfigFile(`${this.options.name}/`);
+      await confFile.generate({ ...this.options, type: 'react' });
+      await this.commit();
+    } catch (error) {
+      if ((error as Error).message) logger.error(error);
+    }
   };
 
   public createNextApp = async (name: string, options: AppOptions) => {
@@ -150,7 +157,7 @@ export class App extends AppConfig {
       shell.cd(this.options.name);
       await sleep(2000);
       shell.exec('git add .');
-      shell.exec('git commit --amend -qm "initial commit made by r8y!"');
+      shell.exec(`git commit --amend -m "initial commit made by ${PACKAGE_NAME}!"`);
       logger.log('green', 'Done !');
     } catch (e) {
       console.log(e);
