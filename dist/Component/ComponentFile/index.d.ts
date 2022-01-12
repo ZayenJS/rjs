@@ -7,7 +7,9 @@ export declare class ComponentFile extends BaseFile<ComponentOptions> {
     private gatherOptionsInteractively;
     private addProps;
     private displayPropTypes;
+    private displayCurrentProps;
     generate: () => Promise<boolean>;
+    protected parse: (collection: unknown[]) => string;
     protected getData: (name?: string) => string;
     private getHeaderImports;
     private getStylingImports;

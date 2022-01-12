@@ -103,11 +103,21 @@ class ComponentFile extends BaseFile_1.BaseFile {
         });
         this.addProps = () => __awaiter(this, void 0, void 0, function* () {
             while (true) {
-                const { propName } = yield (0, enquirer_1.prompt)({
+                const response = yield (0, enquirer_1.prompt)({
                     type: 'input',
                     name: 'propName',
-                    message: 'Enter the prop name (press enter if you are done): ',
+                    message: "Enter the prop name (press enter if when you're done, write props to list all the current added props): ",
                 });
+                let propName = response.propName;
+                while (propName.toLowerCase() === 'props') {
+                    this.displayCurrentProps();
+                    const response = yield (0, enquirer_1.prompt)({
+                        type: 'input',
+                        name: 'propName',
+                        message: "Enter the prop name (press enter if when you're done, write props to list all the current added props): ",
+                    });
+                    propName = response.propName;
+                }
                 if (!propName)
                     break;
                 let propType = null;
@@ -115,7 +125,7 @@ class ComponentFile extends BaseFile_1.BaseFile {
                     const response = yield (0, enquirer_1.prompt)({
                         type: 'input',
                         name: 'propType',
-                        message: 'Enter the prop type (? to see all available types): ',
+                        message: 'Enter the prop type (? to see all available types, props to list the current added props): ',
                         required: true,
                     });
                     propType = response.propType;
@@ -153,6 +163,26 @@ class ComponentFile extends BaseFile_1.BaseFile {
             Logger_1.default.log('white', 'array');
             Logger_1.default.log('white', 'function');
         };
+        this.displayCurrentProps = () => {
+            Logger_1.default.log('yellow', '\tCURRENT ADDED PROPS');
+            Logger_1.default.log('yellow', '__________________________________________');
+            const start = this.addLine(0, 'props {');
+            const props = [];
+            const end = this.addLine(0, '}');
+            for (const key of Object.keys(this.props)) {
+                props.push(this.addLine(1, `${key}, `));
+            }
+            if (this.options.typescript) {
+                props.length = 0;
+                for (const entry of Object.entries(this.props)) {
+                    props.push(this.addLine(1, `${entry[0]}: ${entry[1]};`));
+                }
+            }
+            console.log(props);
+            Logger_1.default.log('white', start);
+            Logger_1.default.log('white', this.parse(props));
+            Logger_1.default.log('white', end);
+        };
         this.generate = () => __awaiter(this, void 0, void 0, function* () {
             if (!this.name)
                 yield this.gatherOptionsInteractively();
@@ -170,14 +200,13 @@ class ComponentFile extends BaseFile_1.BaseFile {
             }
             return response;
         });
-        this.getData = (name = this.name) => [
+        this.parse = (collection) => collection.filter((line) => typeof line === 'string').join('\n');
+        this.getData = (name = this.name) => this.parse([
             ...this.getHeaderImports(),
             ...this.getStylingImports(name),
             ...this.getComponentBody(name),
             this.addLine(0, `export default ${name};`),
-        ]
-            .filter((line) => typeof line === 'string')
-            .join('\n');
+        ]);
         this.getHeaderImports = () => {
             const { componentType, importReact, typescript } = this.options;
             let headerImport = null;

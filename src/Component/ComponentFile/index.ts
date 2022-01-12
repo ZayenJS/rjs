@@ -115,11 +115,26 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
   // TODO: refactor method to use less code (avoid repetition)
   private addProps = async () => {
     while (true) {
-      const { propName }: { propName: string } = await prompt({
+      const response: { propName: string } = await prompt({
         type: 'input',
         name: 'propName',
-        message: 'Enter the prop name (press enter if you are done): ',
+        message:
+          "Enter the prop name (press enter if when you're done, write props to list all the current added props): ",
       });
+
+      let propName = response.propName;
+
+      while (propName.toLowerCase() === 'props') {
+        this.displayCurrentProps();
+        const response: { propName: string } = await prompt({
+          type: 'input',
+          name: 'propName',
+          message:
+            "Enter the prop name (press enter if when you're done, write props to list all the current added props): ",
+        });
+
+        propName = response.propName;
+      }
 
       if (!propName) break;
 
@@ -129,7 +144,8 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
         const response: { propType: string } = await prompt({
           type: 'input',
           name: 'propType',
-          message: 'Enter the prop type (? to see all available types): ',
+          message:
+            'Enter the prop type (? to see all available types, props to list the current added props): ',
           required: true,
         });
 
@@ -137,6 +153,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
 
         while (propType === '?') {
           this.displayPropTypes();
+
           const response: { propType: string } = await prompt({
             type: 'input',
             name: 'propType',
@@ -174,6 +191,32 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     logger.log('white', 'function');
   };
 
+  private displayCurrentProps = () => {
+    logger.log('yellow', '\tCURRENT ADDED PROPS');
+    logger.log('yellow', '__________________________________________');
+
+    const start = this.addLine(0, 'props {');
+    const props = [];
+    const end = this.addLine(0, '}');
+
+    for (const key of Object.keys(this.props)) {
+      props.push(this.addLine(1, `${key}, `));
+    }
+
+    if (this.options.typescript) {
+      props.length = 0;
+
+      for (const entry of Object.entries(this.props)) {
+        props.push(this.addLine(1, `${entry[0]}: ${entry[1]};`));
+      }
+    }
+    console.log(props);
+
+    logger.log('white', start);
+    logger.log('white', this.parse(props));
+    logger.log('white', end);
+  };
+
   public generate = async () => {
     // ? ACTIVATE THIS TO TEST OUTPUT IN SHELL
     // logger.exit(this.options);
@@ -208,15 +251,16 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     return response;
   };
 
+  protected parse = (collection: unknown[]) =>
+    collection.filter((line) => typeof line === 'string').join('\n');
+
   protected getData = (name: string = this.name) =>
-    [
+    this.parse([
       ...this.getHeaderImports(),
       ...this.getStylingImports(name),
       ...this.getComponentBody(name),
       this.addLine(0, `export default ${name};`),
-    ]
-      .filter((line) => typeof line === 'string')
-      .join('\n');
+    ]);
 
   private getHeaderImports = () => {
     const { componentType, importReact, typescript } = this.options;
