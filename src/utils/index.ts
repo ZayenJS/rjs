@@ -1,3 +1,4 @@
+import path from 'path';
 import { ComponentOptions, ConfigFileOptions } from '../@types';
 
 export const hasStyles = (options: ComponentOptions | ConfigFileOptions) =>
@@ -11,3 +12,9 @@ export const toKebabCase = (str: string) =>
     ?.join('-');
 
 export const sleep = (timer: number) => new Promise((resolve) => setTimeout(resolve, timer));
+
+export const getCLIVersion = () => {
+  const { version } = require(path.join(__dirname, '..', '..', 'package.json'));
+
+  return version;
+};

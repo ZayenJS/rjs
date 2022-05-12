@@ -11,6 +11,11 @@ class Logger {
 
   public debug = (...messages: unknown[]) => console.log(chalk`[{cyan DEBUG}]:`, ...messages);
 
+  public info = (...messages: unknown[]) => console.log(chalk`[{blue INFO}]:`, ...messages);
+
+  public comingSoon = (...messages: unknown[]) =>
+    console.log(chalk`[{yellow COMING SOON}]:`, ...messages);
+
   public log = (color: string, message: unknown) => console.log(chalk`{${color} ${message}}`);
 
   public italic = (color: string, message: unknown) =>

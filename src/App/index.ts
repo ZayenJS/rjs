@@ -9,7 +9,7 @@ import { AppOptions, ComponentType, Styling } from '../@types';
 import { AppConfig } from './AppConfig';
 import { sleep } from '../utils';
 import sh from '../Shell';
-import { PACKAGE_NAME } from '../constants';
+import CLI from '../CLI/CLI';
 
 export class App extends AppConfig {
   private gatherOptionsInteractively = async (type: 'react' | 'next') => {
@@ -120,8 +120,7 @@ export class App extends AppConfig {
 
       const reactApp = new ReactApp(this.options);
       await reactApp.generate();
-      const confFile = new ConfigFile(`${this.options.name}/`);
-      await confFile.generate({ ...this.options, type: 'react' });
+
       await this.commit();
     } catch (error) {
       if ((error as Error).message) logger.error(error);
@@ -154,10 +153,9 @@ export class App extends AppConfig {
   private commit = async () => {
     try {
       logger.log('yellow', 'Creating git commit...');
-      shell.cd(this.options.name);
-      await sleep(2000);
+      await sleep(1000);
       shell.exec('git add .');
-      shell.exec(`git commit --amend -m "initial commit made by ${PACKAGE_NAME}!"`);
+      shell.exec(`git commit --amend -m "initial commit made by ${CLI.getPackageName('short')}!"`);
       logger.log('green', 'Done !');
     } catch (e) {
       console.log(e);

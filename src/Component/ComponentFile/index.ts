@@ -9,7 +9,7 @@ import { ComponentOptions, ComponentType, Styling } from '../../@types';
 import { prompt } from 'enquirer';
 
 export class ComponentFile extends BaseFile<ComponentOptions> {
-  private props: { [key: string]: string | null } = {};
+  protected props: { [key: string]: string | null } = {};
 
   public getName = () => this.name;
   public getOptions = () => this.options;
@@ -217,7 +217,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     logger.log('white', end);
   };
 
-  public generate = async () => {
+  public generate = async (forceCreateFile = false) => {
     // ? ACTIVATE THIS TO TEST OUTPUT IN SHELL
     // logger.exit(this.options);
     if (!this.name) await this.gatherOptionsInteractively();
@@ -229,6 +229,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     const componentFile = await fileUtil.createFile(
       path.join(dirPath, this.options.flat ? '' : this.name),
       componentFileName,
+      forceCreateFile,
     );
 
     let response = true;
@@ -262,7 +263,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
       this.addLine(0, `export default ${name};`),
     ]);
 
-  private getHeaderImports = () => {
+  protected getHeaderImports = () => {
     const { componentType, importReact, typescript } = this.options;
 
     let headerImport = null;
@@ -287,7 +288,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     ];
   };
 
-  private getStylingImports = (name: string) => {
+  protected getStylingImports = (name: string) => {
     const { cssModules, styling } = this.options;
 
     return [
@@ -305,7 +306,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     ];
   };
 
-  private getComponentBody = (name: string) => {
+  protected getComponentBody = (name: string) => {
     const { componentType, importReact, typescript } = this.options;
 
     // sets the default tag to a div
@@ -340,7 +341,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     ];
   };
 
-  private getClassComponent = (name: string) => {
+  protected getClassComponent = (name: string) => {
     const { typescript, tag } = this.options;
 
     const className = this.getClassName(name);
@@ -360,7 +361,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     ];
   };
 
-  private getFunctionComponent = (name: string) => {
+  protected getFunctionComponent = (name: string) => {
     const { typescript, tag } = this.options;
 
     const className = this.getClassName(name);
@@ -380,7 +381,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     ];
   };
 
-  private getClassName = (name: string) => {
+  protected getClassName = (name: string) => {
     const { cssModules } = this.options;
 
     if (hasStyles(this.options)) {

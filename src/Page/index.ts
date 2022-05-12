@@ -2,7 +2,7 @@ import logger from '../Logger';
 
 class Page {
   public generate = () => {
-    logger.debug('page generate');
+    logger.comingSoon('This feature is not available yet... 😢! Stay tuned for updates!');
   };
 }
 

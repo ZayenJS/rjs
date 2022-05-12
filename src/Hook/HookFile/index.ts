@@ -8,6 +8,7 @@ import { HookOptions } from '../../@types';
 export class HookFile extends BaseFile<HookOptions> {
   public generate = async () => {
     if (!this.name.startsWith('use')) logger.exit('Hooks must start with "use"!');
+    if (this.name === 'use') logger.exit('The hook name "use" is invalid!');
     // ? ACTIVATE THIS TO TEST OUTPUT IN SHELL
     // logger.exit(this.options);
 
@@ -71,7 +72,7 @@ export class HookFile extends BaseFile<HookOptions> {
       ? [
           this.addLine(1, 'useEffect(() => {'),
           this.addLine(2, ''),
-          this.addLine(2, 'return () => {}'),
+          this.addLine(2, 'return () => {} // TODO?: implement for cleanup'),
           this.addLine(1, '}, []);'),
         ]
       : [];

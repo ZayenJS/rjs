@@ -6,8 +6,8 @@ import shell from '../Shell';
 import fileUtil from '../FileUtil';
 
 import logger from '../Logger';
-import { RC_FILE_NAME } from '../constants';
 import { ConfigFileOptions } from '../@types';
+import CLI from '../CLI/CLI';
 
 export class ConfigFile {
   private destinationPath = '';
@@ -35,7 +35,7 @@ export class ConfigFile {
   public generate = async (options: ConfigFileOptions) => {
     options = await shell.parseOptions(options, true);
     if (this.rootDirPath) {
-      this.destinationPath = `${this.rootDirPath}${RC_FILE_NAME}`;
+      this.destinationPath = `${this.rootDirPath}${CLI.getPackageName('rc')}`;
 
       await this.createRcTemplate(options);
       return;
@@ -43,7 +43,7 @@ export class ConfigFile {
 
     const packageJsonAbsolutePath = await findUp('package.json');
     this.rootDirPath = packageJsonAbsolutePath?.split('package.json')[0];
-    this.destinationPath = `${this.rootDirPath}${RC_FILE_NAME}`;
+    this.destinationPath = `${this.rootDirPath}${CLI.getPackageName('rc')}`;
 
     if (!packageJsonAbsolutePath) logger.exit(this.ERROR_MESSAGE);
 
@@ -51,9 +51,9 @@ export class ConfigFile {
   };
 
   private createRcTemplate = async (options: ConfigFileOptions) => {
-    try {
-      const fileExists = await fileUtil.fileExist(this.destinationPath);
+    const fileExists = await fileUtil.fileExist(this.destinationPath);
 
+    try {
       if (fileExists) {
         const { overwrite } = await shell.alreadyExistPromp(this.OVERWRITE_PROMPT);
 
@@ -70,7 +70,7 @@ export class ConfigFile {
         await fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
     }
 
-    fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2));
+    await fs.writeFile(this.destinationPath, JSON.stringify(options, null, 2), { flag: 'wx' });
 
     logger.log('green', this.SUCCESS_MESSAGE);
   };
@@ -91,6 +91,7 @@ export class ConfigFile {
     const rcFilePath = await this.findRcFile();
 
     let rcFileJsonContent;
+
     if (rcFilePath) {
       rcFileJsonContent = await this.readFile(rcFilePath);
       return JSON.parse(rcFileJsonContent);
@@ -99,7 +100,7 @@ export class ConfigFile {
     return null;
   };
 
-  private findRcFile = async () => findUp(RC_FILE_NAME);
+  private findRcFile = async () => findUp(CLI.getPackageName('rc') as string);
 }
 
 export default new ConfigFile();

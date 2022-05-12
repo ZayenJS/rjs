@@ -13,6 +13,7 @@ class FileUtil {
   public createFile = async (
     directoryPath: string,
     fileName: string,
+    forceCreate = false,
   ): Promise<string | undefined> => {
     try {
       await this.checkRootDir();
@@ -25,7 +26,7 @@ class FileUtil {
 
       const dirExists = await exists(path.join(directoryPath));
 
-      if (!dirExists) {
+      if (!dirExists && !forceCreate) {
         const { create } = await this.createPathPromp(
           directoryPath,
           `The path ${filePath} doesn't exist, do you want to create it?`,
@@ -34,6 +35,9 @@ class FileUtil {
           logger.exit('Action canceled by user, path and file not created.');
         }
 
+        await this.createDirecoryRecursively(directoryPath);
+        logger.italic('green', `Directory ${directoryPath} created successfully!`);
+      } else if (!dirExists && forceCreate) {
         await this.createDirecoryRecursively(directoryPath);
         logger.italic('green', `Directory ${directoryPath} created successfully!`);
       }
