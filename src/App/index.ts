@@ -9,7 +9,7 @@ import { AppOptions, ComponentType, Styling } from '../@types';
 import { AppConfig } from './AppConfig';
 import { sleep } from '../utils';
 import sh from '../Shell';
-import CLI from '../CLI/CLI';
+import CLI from '../CLI';
 
 export class App extends AppConfig {
   private gatherOptionsInteractively = async (type: 'react' | 'next') => {

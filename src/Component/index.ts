@@ -18,6 +18,7 @@ class Component {
     hooksDir: 'src/hooks',
     tag: 'div',
     flat: false,
+    packageManager: 'npm',
   };
 
   public getName = () => this.name;

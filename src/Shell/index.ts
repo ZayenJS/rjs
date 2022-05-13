@@ -6,6 +6,7 @@ import { prompt } from 'enquirer';
 import configFile from '../ConfigFile';
 import logger from '../Logger';
 import { ComponentOptions, HookOptions } from '../@types';
+import { spawnSync } from 'child_process';
 
 class Shell {
   public parseOptions = async (options: any, init = false) => {
@@ -54,6 +55,12 @@ class Shell {
       message,
       required: true,
     });
+
+  public exec = (command: string, options: string[]) => {
+    spawnSync(command, options, {
+      stdio: [process.stdin, process.stdout, process.stderr],
+    });
+  };
 }
 
 export default new Shell();

@@ -7,7 +7,7 @@ import fileUtil from '../FileUtil';
 
 import logger from '../Logger';
 import { ConfigFileOptions } from '../@types';
-import CLI from '../CLI/CLI';
+import CLI from '../CLI';
 
 export class ConfigFile {
   private destinationPath = '';

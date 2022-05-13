@@ -11,7 +11,7 @@ export interface BaseOptions {
   componentDir: string;
   hooksDir: string;
   pageDir?: string;
-  packageManager?: 'npm' | 'yarn';
+  packageManager: 'npm' | 'yarn';
 }
 
 export interface ConfigFileOptions extends BaseOptions {

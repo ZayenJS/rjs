@@ -1,5 +1,5 @@
 import { ComponentOptions } from '../../@types';
-import CLI from '../../CLI/CLI';
+import CLI from '../../CLI';
 import { ComponentFile } from '../ComponentFile';
 
 export class AppComponent extends ComponentFile {

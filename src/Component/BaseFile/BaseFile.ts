@@ -10,7 +10,7 @@ export abstract class BaseFile<T> {
       return null;
     }
 
-    return str ? '\t'.repeat(tabs) + str : '';
+    return str ? '  '.repeat(tabs) + str : '';
   };
 
   protected abstract getData: (name: string) => void;
