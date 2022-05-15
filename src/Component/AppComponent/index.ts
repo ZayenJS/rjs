@@ -3,6 +3,9 @@ import CLI from '../../CLI';
 import { ComponentFile } from '../ComponentFile';
 
 export class AppComponent extends ComponentFile {
+  protected _dirPath: string = 'src';
+  protected _possibleFileExtensions: [string, string] = ['tsx', 'js'];
+
   constructor(options: ComponentOptions) {
     super('App', options);
   }
@@ -49,7 +52,7 @@ export class AppComponent extends ComponentFile {
   protected getData = (name: string = this.name) =>
     this.parse([
       ...this.getHeaderImports(),
-      this.addLine(0, 'import "some_logo";'),
+      this.addLine(0, 'import "../logo.svg";'),
       ...this.getStylingImports(name),
       ...this.getComponentBody(name),
       this.addLine(0, `export default ${name};`),

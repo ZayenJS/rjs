@@ -6,6 +6,8 @@ import logger from '../../Logger';
 import { HookOptions } from '../../@types';
 
 export class HookFile extends BaseFile<HookOptions> {
+  protected _dirPath = 'src/hooks';
+
   public generate = async () => {
     if (!this.name.startsWith('use')) logger.exit('Hooks must start with "use"!');
     if (this.name === 'use') logger.exit('The hook name "use" is invalid!');

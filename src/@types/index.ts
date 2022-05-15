@@ -46,6 +46,7 @@ export interface HookOptions {
   useSelector: boolean;
   useState: boolean;
   useDispatch: boolean;
+  flat: boolean;
 }
 
 export interface CreateFileRecusrsion {

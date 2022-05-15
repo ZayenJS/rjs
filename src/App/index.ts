@@ -2,7 +2,6 @@ import shell from 'shelljs';
 import { prompt } from 'enquirer';
 
 import logger from '../Logger';
-import { ConfigFile } from '../ConfigFile';
 import { ReactApp } from './ReactApp';
 import { NextApp } from './NextApp';
 import { AppOptions, ComponentType, Styling } from '../@types';
@@ -68,12 +67,16 @@ export class App extends AppConfig {
         'Where do you want your components to be generated? (please use a relative path. e.g: src/components)',
     });
 
-    const { router }: { router: boolean } = await prompt({
-      type: 'toggle',
-      name: 'router',
-      message: 'Do you plan on using a router?',
-      required: true,
-    });
+    if (type === 'react') {
+      const { router }: { router: boolean } = await prompt({
+        type: 'toggle',
+        name: 'router',
+        message: 'Do you plan on using a router?',
+        required: true,
+      });
+
+      this.options.router = router;
+    }
 
     const { redux }: { redux: boolean } = await prompt({
       type: 'toggle',
@@ -102,7 +105,6 @@ export class App extends AppConfig {
       styling,
       componentType,
       componentDir: componentDir ?? 'src/components',
-      router,
       redux,
       axios,
       packageManager,
@@ -111,11 +113,14 @@ export class App extends AppConfig {
 
   public createReactApp = async (name: string, options: AppOptions) => {
     try {
+      this.options = {
+        ...this.options,
+        ...this.parseAppOptions(options),
+        name,
+      };
+
       if (!name || options.interactive) {
         await this.gatherOptionsInteractively('react');
-      } else {
-        this.options.name = name;
-        this.options = this.parseAppOptions(options);
       }
 
       const reactApp = new ReactApp(this.options);
@@ -128,19 +133,32 @@ export class App extends AppConfig {
   };
 
   public createNextApp = async (name: string, options: AppOptions) => {
-    if (!name) {
-      this.gatherOptionsInteractively('next');
-    }
+    logger.comingSoon('This feature is coming soon.');
+    process.exit(0);
 
-    shell.exec(`npx create-react-app ${name}`);
-    const confFile = new ConfigFile(`${name}/`);
-    await confFile.generate({ ...options, type: 'next', pageDir: 'pages' });
-    const nextApp = new NextApp(name, this.options);
-    await nextApp.generate();
+    try {
+      this.options = {
+        ...this.options,
+        ...this.parseAppOptions(options),
+        name,
+      };
+
+      if (!name || options.interactive) {
+        await this.gatherOptionsInteractively('next');
+      }
+
+      const nextApp = new NextApp(name, this.options);
+      await nextApp.generate();
+
+      await this.commit();
+    } catch (error) {
+      if ((error as Error).message) logger.error(error);
+    }
   };
 
   private parseAppOptions = (options: AppOptions) => {
     const opts: any = { ...this.options };
+
     for (const [key, value] of Object.entries(options)) {
       if (value) {
         opts[key] = value;

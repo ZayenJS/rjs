@@ -33,7 +33,7 @@ export class Dependencies {
     }
 
     if (this.options.redux) {
-      this.add('redux', false, true);
+      this.add('@reduxjs/toolkit', false, false);
       this.add('react-redux', false, true);
     }
 

@@ -56,10 +56,12 @@ class Shell {
       required: true,
     });
 
-  public exec = (command: string, options: string[]) => {
-    spawnSync(command, options, {
+  public exec = (command: string, options: string[] = []) => {
+    const childProcess = spawnSync(command, options, {
       stdio: [process.stdin, process.stdout, process.stderr],
     });
+
+    return childProcess.output.toString();
   };
 }
 

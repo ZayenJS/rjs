@@ -5,7 +5,7 @@ import sh from '../Shell';
 import { sleep } from '../utils';
 
 export class Folder {
-  public constructor(private _basePath: string, private _folders: string[]) {}
+  public constructor(private _basePath: string, private _folders: string[] = []) {}
 
   public create = async () => {
     const separator = os.platform() === 'win32' ? '\\' : '/';

@@ -1,5 +1,3 @@
-import { spawnSync } from 'child_process';
-
 import shell from 'shelljs';
 import { ReactAppOptions } from '../../@types';
 import { AppConfig } from '../AppConfig';
@@ -10,8 +8,8 @@ import Logger from '../../Logger';
 import sh from '../../Shell';
 import { Dependencies } from '../../Dependencies';
 import { Folder } from '../../Folder';
-import { sleep } from '../../utils';
 import { AppEntryPoint } from '../../Component/AppEntryPoint';
+import { Store } from '../../Store';
 
 export class ReactApp extends AppConfig {
   constructor(protected options: ReactAppOptions) {
@@ -50,7 +48,6 @@ export class ReactApp extends AppConfig {
     const appStyleFile = new StyleFile('App', options);
     await appStyleFile.generate();
 
-    // TODO: add custom index file etc...
     const appEntryPoint = new AppEntryPoint(options, [
       this.options.redux ? 'redux' : '',
       this.options.router ? 'react-router-dom' : '',
@@ -67,13 +64,8 @@ export class ReactApp extends AppConfig {
     await new Folder('src/assets', [styling, 'images', 'fonts', 'icons']).create();
 
     if (this.options.redux) {
-      await new Folder('src/store', ['actions', 'reducers', 'selectors', 'middlewares']).create();
-      // TODO: create store file
-      shell.touch('src/store/index.ts');
-
-      shell.touch('src/store/reducers/index.ts');
-      shell.touch('src/store/actions/index.ts');
-      shell.touch('src/store/middlewares/index.ts');
+      const store = await new Store({ typescript: this.options.typescript, flat: true }).create();
+      await store.generate();
 
       Logger.italic('green', 'Redux store files and folders created successfully.');
     }

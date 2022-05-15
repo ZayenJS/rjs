@@ -1,6 +1,3 @@
-import logger from '../../Logger';
-import configFile from '../../ConfigFile';
-import component from '../../Component';
 import { NextAppOptions } from '../../@types';
 import { AppConfig } from '../AppConfig';
 

@@ -2,6 +2,9 @@ import { ComponentOptions } from '../../@types';
 import { ComponentFile } from '../ComponentFile';
 
 export class AppEntryPoint extends ComponentFile {
+  protected _dirPath: string = 'src';
+  protected _possibleFileExtensions: [string, string] = ['tsx', 'js'];
+
   constructor(options: ComponentOptions, private readonly packages: string[]) {
     super('index', {
       ...options,
@@ -13,29 +16,46 @@ export class AppEntryPoint extends ComponentFile {
     const headerImports = [
       this.addLine(0, "import { StrictMode } from 'react';"),
       this.addLine(0, "import ReactDOM from 'react-dom/client';"),
-      this.addLine(0, "import App from './App/App';"),
+      this.addLine(
+        0,
+        this.packages.includes('react-router-dom')
+          ? "import { BrowserRouter as Router } from 'react-router-dom';"
+          : null,
+      ),
+      this.addLine(
+        0,
+        this.packages.includes('redux') ? "import { Provider } from 'react-redux';" : null,
+      ),
       this.addLine(0, "import reportWebVitals from './reportWebVitals';"),
+      this.addLine(0, ''),
     ];
 
-    if (this.packages.includes('react-router-dom')) {
-      headerImports.push(this.addLine(0, "import { Router } from 'react-router-dom';"));
-    }
+    headerImports.push(this.addLine(0, "import App from './App/App';"), this.addLine(0, ''));
 
     if (this.packages.includes('redux')) {
-      headerImports.push(this.addLine(0, "import { Provider } from 'react-redux';"));
-      headerImports.push(this.addLine(0, "import store from './store';"));
+      headerImports.push(this.addLine(0, "import store from './store';"), this.addLine(0, ''));
     }
 
     return headerImports;
   };
 
-  protected getData = (name: string = this.name) => {
+  protected getData = () => {
+    const styles = [];
+
+    if (this.options.styling === 'scss') {
+      styles.push(this.addLine(0, "import './assets/scss/index.scss';"));
+    } else if (this.options.styling === 'css') {
+      styles.push(this.addLine(0, "import './assets/css/index.css';"));
+    }
+
     const data = [
       ...this.getHeaderImports(),
-      ...this.getStylingImports(name),
-      this.addLine(0, 'const root = ReactDOM.createRoot('),
-      this.addLine(1, 'document.getElementById("root") as HTMLElement'),
-      this.addLine(0, ');'),
+      ...styles,
+      this.addLine(0, ''),
+      this.addLine(
+        0,
+        `const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);`,
+      ),
       this.addLine(0, ''),
       this.addLine(0, 'root.render('),
       this.addLine(1, '<StrictMode>'),
@@ -66,13 +86,14 @@ export class AppEntryPoint extends ComponentFile {
     data.push(...appWrappingComponents);
 
     data.push(
-      this.addLine(1, '</StrictMode>'),
+      this.addLine(1, '</StrictMode>,'),
       this.addLine(0, ');'),
       this.addLine(0, ''),
       this.addLine(0, '// If you want to start measuring performance in your app, pass a function'),
       this.addLine(0, '// to log results (for example: reportWebVitals(console.log))'),
       this.addLine(0, '// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals'),
       this.addLine(0, 'reportWebVitals();'),
+      this.addLine(0, ''),
     );
 
     return this.parse(data);

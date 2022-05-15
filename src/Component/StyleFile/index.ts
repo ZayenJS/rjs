@@ -2,13 +2,15 @@ import path from 'path';
 
 import fileUtil from '../../FileUtil';
 import shell from '../../Shell';
-import logger from '../../Logger';
 import { BaseFile } from '../BaseFile/BaseFile';
-import ConfigFile from '../../ConfigFile';
 import { toKebabCase } from '../../utils';
 import { ComponentOptions } from '../../@types';
 
 export class StyleFile extends BaseFile<ComponentOptions> {
+  protected gatherOptionsInteractively(): Promise<void> {
+    return Promise.resolve();
+  }
+
   public generate = async () => {
     let styleFile = null;
     let styleFileName = null;
