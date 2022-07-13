@@ -1,4 +1,4 @@
-import { BaseFile } from '../../Component/BaseFile/BaseFile';
+import { BaseFile } from '../../Files/BaseFile/BaseFile';
 
 interface ReducerOptions {
   typescript: boolean;
@@ -7,21 +7,23 @@ interface ReducerOptions {
 }
 
 export class Reducer extends BaseFile<ReducerOptions> {
-  protected _dirPath = 'src/store/reducers';
-  protected _possibleFileExtensions: [string, string] = ['ts', 'js'];
-
   public constructor(name: string, options: ReducerOptions) {
-    super(name, options);
+    super({ name, options, dirPath: 'src/store/reducers' });
   }
 
-  protected gatherOptionsInteractively(): Promise<void> {
-    return Promise.resolve();
-  }
+  public generate = async (forceCreateFile = true) => {
+    return this._generate(
+      this._name,
+      this._options.typescript ? 'ts' : 'js',
+      'reducer',
+      forceCreateFile,
+    );
+  };
 
   protected getData = () => {
     if (this._data) return this._data;
 
-    if (this.name === 'index') {
+    if (this._name === 'index') {
       const data: (string | null)[] = [
         this.addLine(0, `import { combineReducers } from '@reduxjs/toolkit';`),
         this.addLine(0, `import { templateReducer } from './template';`),

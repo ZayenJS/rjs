@@ -2,6 +2,14 @@ export type Styling = 'scss' | 'css' | 'none';
 
 export type ComponentType = 'function' | 'class';
 
+export interface StyleSheetOptions {
+  styling: Styling;
+  flat: boolean;
+  cssModules: boolean;
+  dirPath?: string;
+  componentDir: string;
+}
+
 export interface BaseOptions {
   importReact: boolean;
   typescript: boolean;

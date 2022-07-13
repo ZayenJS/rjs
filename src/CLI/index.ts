@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import app from '../App';
 import configFile from '../ConfigFile';
-import component from '../Component';
+import { component } from '../Files';
 import hook from '../Hook';
 import page from '../Page';
 import { getCLIVersion } from '../utils';
@@ -38,7 +38,7 @@ class CLI extends Command {
       .option('-T, --type <type>', 'Specifies the framework used')
       .option(
         '--import-react',
-        'This will influence the future component generation with the import React from "react" line',
+        'This will influence the future {component} generation with the import React from "react" line',
       )
       .option(
         '-t, --typescript',

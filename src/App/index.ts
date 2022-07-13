@@ -173,7 +173,9 @@ export class App extends AppConfig {
       logger.log('yellow', 'Creating git commit...');
       await sleep(1000);
       shell.exec('git add .');
-      shell.exec(`git commit --amend -m "initial commit made by ${CLI.getPackageName('short')}!"`);
+      shell.exec(
+        `git commit --amend -m "initial commit made by ${CLI.getPackageName('short')}!" -q`,
+      );
       logger.log('green', 'Done !');
     } catch (e) {
       console.log(e);

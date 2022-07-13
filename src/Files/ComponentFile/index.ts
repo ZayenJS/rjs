@@ -10,11 +10,11 @@ import { prompt } from 'enquirer';
 export class ComponentFile extends BaseFile<ComponentOptions> {
   protected props: { [key: string]: string | null } = {};
   protected _interactive: boolean = true;
-  protected _dirPath: string = 'src/components';
-  protected _possibleFileExtensions: [string, string] = ['tsx', 'js'];
 
-  public getName = () => this.name;
-  public getOptions = () => this.options;
+  // TODO: add dirPath option
+
+  public getName = () => this._name;
+  public getOptions = () => this._options;
 
   protected gatherOptionsInteractively = async () => {
     const { name }: { name: string } = await prompt({
@@ -42,7 +42,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
       'Do you want to import React from react ?',
     );
 
-    this.options.importReact = importReact;
+    this._options.importReact = importReact;
 
     const { typescript } = await shell.togglePrompt('typescript', 'Do you want to use typescript?');
 
@@ -61,7 +61,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
         required: true,
       });
 
-      this.options.cssModules = cssModules;
+      this._options.cssModules = cssModules;
     }
 
     const { componentType }: { componentType: ComponentType } = await prompt({
@@ -93,9 +93,9 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
       message: 'Do you want to generate the files inside a folder?',
     });
 
-    this.name = name;
-    this.options = {
-      ...this.options,
+    this._name = name;
+    this._options = {
+      ...this._options,
       componentDir,
       componentType,
       importReact,
@@ -115,13 +115,28 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
   };
 
   public generate = async (forceCreateFile: boolean = false): Promise<boolean> => {
-    if (!this.name) await this.gatherOptionsInteractively();
+    if (!this._name) await this.gatherOptionsInteractively();
 
-    return this._generate(forceCreateFile);
+    const response = await this._generate(
+      this._name,
+      this._options.typescript ? 'tsx' : 'js',
+      'component',
+      forceCreateFile,
+    );
+
+    if (response)
+      logger.italic('green', `Component file created successfully! (${this.getFileName()})`);
+
+    return response;
   };
 
   // TODO: refactor method to use less code (avoid repetition)
-  private addProps = async () => {
+  public addProps = async (props?: { [key: string]: string | null }) => {
+    if (props) {
+      this.props = props;
+      return;
+    }
+
     while (true) {
       const response: { propName: string } = await prompt({
         type: 'input',
@@ -130,7 +145,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
           "Enter the prop name (press enter if when you're done, write props to list all the current added props): ",
       });
 
-      let propName = response.propName;
+      let { propName } = response;
 
       while (propName.toLowerCase() === 'props') {
         this.displayCurrentProps();
@@ -148,7 +163,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
 
       let propType = null;
 
-      if (this.options.typescript) {
+      if (this._options.typescript) {
         const response: { propType: string } = await prompt({
           type: 'input',
           name: 'propType',
@@ -211,7 +226,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
       props.push(this.addLine(1, `${key}, `));
     }
 
-    if (this.options.typescript) {
+    if (this._options.typescript) {
       props.length = 0;
 
       for (const entry of Object.entries(this.props)) {
@@ -225,16 +240,18 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
     logger.log('white', end);
   };
 
-  protected getData = (name: string = this.name) =>
+  protected getData = (name: string = this._name) =>
+    this._data ||
     this.parse([
       ...this.getHeaderImports(),
       ...this.getStylingImports(name),
       ...this.getComponentBody(name),
       this.addLine(0, `export default ${name};`),
+      this.addLine(0, ''),
     ]);
 
   protected getHeaderImports = () => {
-    const { componentType, importReact, typescript } = this.options;
+    const { componentType, importReact, typescript } = this._options;
 
     let headerImport = null;
 
@@ -259,16 +276,16 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
   };
 
   protected getStylingImports = (name: string) => {
-    const { cssModules, styling } = this.options;
+    const { cssModules, styling } = this._options;
 
     return [
       this.addLine(
         0,
-        hasStyles(this.options) && !cssModules ? `import './${name}.${styling}';` : null,
+        hasStyles(this._options) && !cssModules ? `import './${name}.${styling}';` : null,
       ),
       this.addLine(
         0,
-        hasStyles(this.options) && cssModules
+        hasStyles(this._options) && cssModules
           ? `import classes from './${name}.module.${styling}';`
           : null,
       ),
@@ -277,10 +294,10 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
   };
 
   protected getComponentBody = (name: string) => {
-    const { componentType, importReact, typescript } = this.options;
+    const { componentType, importReact, typescript } = this._options;
 
     // sets the default tag to a div
-    this.options.tag = this.options.tag ?? 'div';
+    this._options.tag = this._options.tag ?? 'div';
 
     const component =
       componentType === 'function' ? this.getFunctionComponent(name) : this.getClassComponent(name);
@@ -312,7 +329,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
   };
 
   protected getClassComponent = (name: string) => {
-    const { typescript, tag } = this.options;
+    const { typescript, tag } = this._options;
 
     const className = this.getClassName(name);
 
@@ -323,7 +340,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
       ),
       this.addLine(1, 'state = {};'),
       this.addLine(0, ''),
-      this.addLine(1, 'render () {'),
+      this.addLine(1, 'render() {'),
       this.addLine(2, `return <${tag}${className}>${name} Class Component</${tag}>;`),
       this.addLine(1, '}'),
       this.addLine(0, '}'),
@@ -332,7 +349,7 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
   };
 
   protected getFunctionComponent = (name: string) => {
-    const { typescript, tag } = this.options;
+    const { typescript, tag } = this._options;
 
     const className = this.getClassName(name);
 
@@ -343,18 +360,16 @@ export class ComponentFile extends BaseFile<ComponentOptions> {
           Object.keys(this.props).length ? `{${Object.keys(this.props).join(', ')}}` : ''
         }) => {`,
       ),
-      this.addLine(1, 'return ('),
-      this.addLine(2, `<${tag}${className}>${name} Component</${tag}>`),
-      this.addLine(1, ');'),
-      this.addLine(0, '}'),
+      this.addLine(1, `return <${tag}${className}>${name} Function Component</${tag}>;`),
+      this.addLine(0, '};'),
       this.addLine(0, ''),
     ];
   };
 
   protected getClassName = (name: string) => {
-    const { cssModules } = this.options;
+    const { cssModules } = this._options;
 
-    if (hasStyles(this.options)) {
+    if (hasStyles(this._options)) {
       return ` className=${cssModules ? '{classes.Container}' : `'${toKebabCase(name)}'`}`;
     }
 

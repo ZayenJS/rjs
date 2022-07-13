@@ -36,10 +36,10 @@ class FileUtil {
         }
 
         await this.createDirecoryRecursively(directoryPath);
-        logger.italic('green', `Directory ${directoryPath} created successfully!`);
+        logger.italic('green', `${directoryPath} directory created successfully.`);
       } else if (!dirExists && forceCreate) {
         await this.createDirecoryRecursively(directoryPath);
-        logger.italic('green', `Directory ${directoryPath} created successfully!`);
+        logger.italic('green', `${directoryPath} directory created successfully.`);
       }
 
       const file = await fs.open(filePath, constants.O_CREAT);

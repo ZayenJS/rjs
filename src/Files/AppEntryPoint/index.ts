@@ -2,15 +2,25 @@ import { ComponentOptions } from '../../@types';
 import { ComponentFile } from '../ComponentFile';
 
 export class AppEntryPoint extends ComponentFile {
-  protected _dirPath: string = 'src';
-  protected _possibleFileExtensions: [string, string] = ['tsx', 'js'];
-
   constructor(options: ComponentOptions, private readonly packages: string[]) {
-    super('index', {
-      ...options,
-      flat: true,
+    super({
+      name: 'index',
+      options: {
+        ...options,
+        flat: true,
+      },
+      dirPath: 'src',
     });
   }
+
+  public generate = async (forceCreateFile = true) => {
+    return this._generate(
+      this._name,
+      this._options.typescript ? 'tsx' : 'js',
+      'entry point',
+      forceCreateFile,
+    );
+  };
 
   protected getHeaderImports = () => {
     const headerImports = [
@@ -42,9 +52,10 @@ export class AppEntryPoint extends ComponentFile {
   protected getData = () => {
     const styles = [];
 
-    if (this.options.styling === 'scss') {
+    if (this._options.styling === 'scss') {
       styles.push(this.addLine(0, "import './assets/scss/index.scss';"));
-    } else if (this.options.styling === 'css') {
+    } else if (this._options.styling === 'css') {
+      styles.push(this.addLine(0, "import './assets/css/reset.css';"));
       styles.push(this.addLine(0, "import './assets/css/index.css';"));
     }
 

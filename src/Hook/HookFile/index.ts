@@ -1,40 +1,21 @@
-import path from 'path';
-import shell from '../../Shell';
-import { BaseFile } from '../../Component/BaseFile/BaseFile';
-import fileUtil from '../../FileUtil';
+import { BaseFile } from '../../Files/BaseFile/BaseFile';
 import logger from '../../Logger';
 import { HookOptions } from '../../@types';
 
 export class HookFile extends BaseFile<HookOptions> {
-  protected _dirPath = 'src/hooks';
+  public constructor(name: string, options: HookOptions & { dirPath?: string }) {
+    super({
+      name,
+      options: { ...options, flat: options.flat ?? true },
+      dirPath: options.dirPath ?? options.hooksDir,
+    });
+  }
 
   public generate = async () => {
-    if (!this.name.startsWith('use')) logger.exit('Hooks must start with "use"!');
-    if (this.name === 'use') logger.exit('The hook name "use" is invalid!');
-    // ? ACTIVATE THIS TO TEST OUTPUT IN SHELL
-    // logger.exit(this.options);
+    if (!this._name.startsWith('use')) logger.exit('Hooks must start with "use"!');
+    if (this._name === 'use') logger.exit('The hook name "use" is invalid!');
 
-    const hookFileName = `${this.name}.${this.options.typescript ? 'ts' : 'js'}`;
-    this._nameWithExtension = hookFileName;
-    const dirPath = this.options.hooksDir;
-
-    const hookFile = await fileUtil.createFile(path.join(dirPath), hookFileName);
-
-    let response = true;
-
-    if (hookFile) {
-      const { overwrite } = await shell.alreadyExistPromp(
-        `The hook ${hookFileName} already exists, do you want to overwrite it?`,
-      );
-
-      response = overwrite;
-    }
-
-    if (response) {
-      await fileUtil.writeToFile(path.join(dirPath, hookFileName), this.getData());
-    }
-
-    return response;
+    return this._generate(this._name, this._options.typescript ? 'ts' : 'js', 'hook');
   };
 
   protected getData = () =>
@@ -43,7 +24,7 @@ export class HookFile extends BaseFile<HookOptions> {
       .join('\n');
 
   private addImports = () => {
-    const { useDispatch, useEffect, useSelector, useState } = this.options;
+    const { useDispatch, useEffect, useSelector, useState } = this._options;
 
     let reactImports = `import { `;
     let reactReduxImports = `import { `;
@@ -67,7 +48,7 @@ export class HookFile extends BaseFile<HookOptions> {
   };
 
   private addFunctionBody = () => {
-    const { useDispatch, useEffect, useSelector, useState, typescript } = this.options;
+    const { useDispatch, useEffect, useSelector, useState, typescript } = this._options;
 
     const state = useState ? this.addLine(1, 'const [state, setState] = useState({});') : null;
     const effect = useEffect
@@ -91,7 +72,7 @@ export class HookFile extends BaseFile<HookOptions> {
     const hasBody = state || effect.length || dispatch || selector;
 
     return [
-      this.addLine(0, `export const ${this.name} = () => {`),
+      this.addLine(0, `export const ${this._name} = () => {`),
       state,
       selector,
       dispatch,

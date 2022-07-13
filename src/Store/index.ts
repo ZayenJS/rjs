@@ -1,4 +1,4 @@
-import { BaseFile } from '../Component/BaseFile/BaseFile';
+import { BaseFile } from '../Files/BaseFile/BaseFile';
 import { Folder } from '../Folder';
 import Logger from '../Logger';
 import { Action } from './Action';
@@ -11,12 +11,10 @@ export interface StoreOptions {
 }
 
 export class Store extends BaseFile<StoreOptions> {
-  protected _dirPath = 'src/store';
-  protected _possibleFileExtensions: [string, string] = ['ts', 'js'];
   private _generated = false;
 
   public constructor(options: StoreOptions) {
-    super('index', options);
+    super({ name: 'index', options, dirPath: 'src/store', possibleExtensions: ['ts', 'js'] });
   }
 
   public create = async () => {
@@ -28,28 +26,28 @@ export class Store extends BaseFile<StoreOptions> {
   public generate = async (forceCreateFile = true) => {
     if (this._generated) return true;
 
-    await this._generate(forceCreateFile);
-    await new Reducer('index', this.options).generate(forceCreateFile);
-    await new Reducer('template', this.options)
+    await this._generate('index', this._options.typescript ? 'ts' : 'js', 'store', forceCreateFile);
+    await new Reducer('index', this._options).generate(forceCreateFile);
+    await new Reducer('template', this._options)
       .setData(this._getTemplateReducer())
       .generate(forceCreateFile);
 
     await new Folder('src/store/actions', ['template']).create();
 
-    await new Action('index', this.options)
+    await new Action('index', this._options)
       .setData(this.parse([this.addLine(0, `export * from './template';`), this.addLine(0, '')]))
       .generate(forceCreateFile);
 
-    await new Action('template/index', this.options)
+    await new Action('template/index', this._options)
       .setData(this._getTemplateIndex())
       .generate(forceCreateFile);
 
-    await new Action('template/template.action', this.options)
+    await new Action('template/template.action', this._options)
       .setData(this._getTemplateActions())
       .generate(forceCreateFile);
 
-    if (this.options.typescript) {
-      await new Action('template/template.payload', this.options)
+    if (this._options.typescript) {
+      await new Action('template/template.payload', this._options)
         .setData(this._getTemplatePayload())
         .generate(forceCreateFile);
     }
@@ -71,7 +69,7 @@ export class Store extends BaseFile<StoreOptions> {
       this.addLine(0, ''),
     ];
 
-    if (this.options.typescript) {
+    if (this._options.typescript) {
       data.push(this.addLine(0, `export type State = ReturnType<typeof rootReducer>;`));
       data.push(this.addLine(0, ''));
     }
@@ -89,7 +87,7 @@ export class Store extends BaseFile<StoreOptions> {
       this.addLine(0, ''),
     ];
 
-    if (this.options.typescript) {
+    if (this._options.typescript) {
       data.push(this.addLine(0, `export type TemplateState = {`));
       data.push(this.addLine(1, `template: string;`));
       data.push(this.addLine(0, `};`));
@@ -97,7 +95,10 @@ export class Store extends BaseFile<StoreOptions> {
     }
 
     data.push(
-      this.addLine(0, `const INITIAL_STATE${this.options.typescript ? ': TemplateState' : ''} = {`),
+      this.addLine(
+        0,
+        `const INITIAL_STATE${this._options.typescript ? ': TemplateState' : ''} = {`,
+      ),
     );
     data.push(this.addLine(1, `template: '',`));
     data.push(this.addLine(0, `};`));
@@ -117,20 +118,20 @@ export class Store extends BaseFile<StoreOptions> {
   private _getTemplateIndex = () =>
     this.parse([
       this.addLine(0, `export * from './template.action';`),
-      this.options.typescript ? this.addLine(0, `export * from './template.payload';`) : null,
+      this._options.typescript ? this.addLine(0, `export * from './template.payload';`) : null,
       this.addLine(0, ''),
     ]);
 
   private _getTemplateActions = () => {
     const data = [
       this.addLine(0, `import { createAction } from '@reduxjs/toolkit';`),
-      this.options.typescript
+      this._options.typescript
         ? this.addLine(0, `import { SetTemplatePayload } from './template.payload';`)
         : null,
       this.addLine(0, ''),
     ];
 
-    if (this.options.typescript) {
+    if (this._options.typescript) {
       data.push(
         this.addLine(0, `export enum TemplateActionType {`),
         this.addLine(1, `SET_TEMPLATE = 'SET_TEMPLATE',`),
@@ -149,7 +150,7 @@ export class Store extends BaseFile<StoreOptions> {
       this.addLine(1, `TemplateActionType.SET_TEMPLATE,`),
     );
 
-    if (this.options.typescript) {
+    if (this._options.typescript) {
       data.push(this.addLine(1, `(payload: SetTemplatePayload) => ({ payload }),`));
     } else {
       data.push(this.addLine(1, `(payload) => ({ payload }),`));

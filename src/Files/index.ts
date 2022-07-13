@@ -27,24 +27,26 @@ class Component {
   public generate = async (componentName: string, options: ComponentOptions) => {
     options = await shell.parseOptions(options);
 
-    const componentFile = new ComponentFile(componentName, options);
+    const componentFile = new ComponentFile({
+      name: componentName,
+      options,
+      dirPath: options.componentDir,
+      possibleExtensions: ['tsx', 'js'],
+    });
     const generatedComponentFile = await componentFile.generate();
 
-    if (generatedComponentFile)
-      logger.italic(
-        'green',
-        `Component file created successfully! (${componentFile.getFileName()})`,
-      );
+    if (!generatedComponentFile) logger.error(`Could not generate component ${componentName}`);
 
     // only creates a style file if styling is css or scss
     if (hasStyles(options)) {
       options = componentFile.getOptions();
       const styleFile = new StyleFile(componentName ?? componentFile.getName(), options);
       const generatedStyleFile = await styleFile.generate();
-      if (generatedStyleFile)
-        logger.italic('green', `Style file created successfully! (${styleFile.getFileName()})`);
+
+      if (!generatedStyleFile)
+        logger.error(`Could not generate style file for component ${componentName}`);
     }
   };
 }
 
-export default new Component();
+export const component = new Component();

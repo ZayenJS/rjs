@@ -3,14 +3,25 @@ import CLI from '../../CLI';
 import { ComponentFile } from '../ComponentFile';
 
 export class AppComponent extends ComponentFile {
-  protected _dirPath: string = 'src';
-  protected _possibleFileExtensions: [string, string] = ['tsx', 'js'];
-
   constructor(options: ComponentOptions) {
-    super('App', options);
+    super({
+      name: 'App',
+      options,
+      dirPath: 'src',
+    });
   }
+
+  public generate = async (forceCreateFile = true) => {
+    return this._generate(
+      this._name,
+      this._options.typescript ? 'tsx' : 'js',
+      'component',
+      forceCreateFile,
+    );
+  };
+
   protected getClassComponent = (name: string) => {
-    const { typescript, tag } = this.options;
+    const { typescript, tag } = this._options;
 
     const className = this.getClassName(name);
 
@@ -30,7 +41,7 @@ export class AppComponent extends ComponentFile {
   };
 
   protected getFunctionComponent = (name: string) => {
-    const { typescript, tag } = this.options;
+    const { typescript, tag } = this._options;
 
     const className = this.getClassName(name);
 
@@ -49,7 +60,7 @@ export class AppComponent extends ComponentFile {
     ];
   };
 
-  protected getData = (name: string = this.name) =>
+  protected getData = (name: string = this._name) =>
     this.parse([
       ...this.getHeaderImports(),
       this.addLine(0, 'import "../logo.svg";'),
