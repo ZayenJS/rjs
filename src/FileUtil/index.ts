@@ -18,7 +18,6 @@ class FileUtil {
     try {
       await this.checkRootDir();
 
-      const folderName = fileName.split('.')[0];
       let filePath = path.join(directoryPath, fileName);
 
       filePath = (await this.getFileAbsolutePath(filePath)) ?? directoryPath;
@@ -56,8 +55,7 @@ class FileUtil {
   private checkRootDir = async () => {
     const packageJsonDirPath = await findUp('package.json');
 
-    if (!packageJsonDirPath)
-      logger.exit('Package.json not found... Make sure you are in the right directory.');
+    if (!packageJsonDirPath) logger.exit('Package.json not found... Make sure you are in the right directory.');
 
     return packageJsonDirPath?.split('package.json')[0];
   };
@@ -74,7 +72,7 @@ class FileUtil {
       const rootDirIndex = splitFilePath.indexOf(rootDirname);
 
       // check to verify that src is the folder next to the root folder in the array
-      // if so the file will be generated inisde the src folder
+      // if so the file will be generated inside the src folder
       if (splitFilePath[rootDirIndex + 1] !== 'src')
         logger.exit('Files can only be created in src folder when using react, please try again.');
 
